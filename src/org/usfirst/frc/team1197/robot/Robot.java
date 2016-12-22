@@ -17,9 +17,6 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.*;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
-
-
-
 public class Robot
 extends SampleRobot
 {
@@ -225,11 +222,10 @@ extends SampleRobot
 		
 	}
 	
+	//Low-gear software wise, High-gear mechanically
 	public void disabled() {
-		TorMotionProfile.turnOff();
-		driveCANS.resetEncoder();
-		TorMotionProfile.setWayPoint(0.0);
-		driveCANS.choosePercentVbus();
+		drive.shiftToLowGear();
+		S1.set(false); 
 		driveCANS.SetDrive(0.0, 0.0);
 	}
 
