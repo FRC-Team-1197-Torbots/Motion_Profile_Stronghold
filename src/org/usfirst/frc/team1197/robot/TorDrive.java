@@ -1,9 +1,5 @@
 package org.usfirst.frc.team1197.robot;
 
-import edu.wpi.first.wpilibj.CANTalon;
-
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.livewindow.*;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -11,12 +7,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class TorDrive
 {	
-	private Joystick stick;
-	private Joystick overrideStick;
-	private Encoder m_encoder;
-	private float negOvershoot;
-	
-	private TorCAN m_jagDrive;
 	private boolean isHighGear = true;
 	private Solenoid m_solenoidshift;
 
@@ -29,99 +19,136 @@ public class TorDrive
 	private double centerRadius = 0.0;
 	private double maxThrottle;
 	private double approximateSensorSpeed;
-	
-	private CANTalon rightTalon;
-	private CANTalon leftTalon;
+
+	private double lastOmega;
 	
 	private double targetVelocity;
 	private double targetAcceleration;
 	private double targetDisplacement;
 	
+	private double targetOmega;
+	private double targetAlpha;
+	private double targetHeading;
+	
+	private double currentHeading;
+	
+	private double v;
+	private double w;
+	
 	private double displacementError;
 	private double headingError;
-	private double v;
-	private double omega;
 	private double lastDisplacementError;
 	private double lastHeadingError;
-	private double totalError;
+	private double totalDisplacementError;
+	private double totalHeadingError;
 	
-	private double kA = 0.3;
-
-	private double kP = 1.0;  //0.001
+	private double kA = 0.2; //0.025
+	private double kP = 0.01;  //1.0
 	private double kI = 0.0;  //0.0
-	private double kD = 0.5;  //0.01
+	private double kD = 0.005;  //0.5
+
+	private double ka = 0.0;//0.2
+	private double kp = 0.0;//1.0
+	private double ki = 0.0;
+	private double kd = 0.0;//0.5
 
 	private double dt = 0.01;
 	
-	private TorTrajectory trajectory;	
+	private TorTrajectory linearTrajectory;
+	private TorTrajectory pivotTrajectory;
+	
 	private long currentTime;
 	
 	private StationaryTrajectory stationaryTraj;
 	
 	class PeriodicRunnable implements java.lang.Runnable {
 		public void run() {
-			if(TorMotionProfile.isTurnedOn()){
+			if(TorMotionProfile.isActive()){
 				currentTime = System.currentTimeMillis();
-				currentTime = currentTime - (currentTime % 10);
-				targetDisplacement = TorMotionProfile.lookUpDisplacement(currentTime);
-				targetVelocity = TorMotionProfile.lookUpVelocity(currentTime);
-				targetAcceleration = TorMotionProfile.lookUpAcceleration(currentTime);
+				currentTime = (currentTime - (currentTime % ((long)(dt * 1000))));
 				if(TorMotionProfile.lookUpIsLast(currentTime)){
-					m_jagDrive.resetEncoder();
-					TorMotionProfile.setWayPoint(0.0);
-					TorMotionProfile.stop();
+					stationaryTraj.execute();
 				}
 				
-				SmartDashboard.putNumber("targetAcceleration", targetAcceleration);
-				SmartDashboard.putNumber("targetDisplacement", targetDisplacement);
-				SmartDashboard.putNumber("getDisplacement", m_jagDrive.getDisplacement());
+				targetDisplacement = TorMotionProfile.lookUpDisplacement(currentTime);
+				targetVelocity = TorMotionProfile.lookUpVelocity(currentTime);
+				targetAcceleration = TorMotionProfile.lookUpAcceleration(currentTime);	
 				
+//				SmartDashboard.putNumber("targetVelocity", targetVelocity);
+//				SmartDashboard.putNumber("targetAcceleration", targetAcceleration);
+//				SmartDashboard.putNumber("targetDisplacement", targetDisplacement);
+//				SmartDashboard.putNumber("getDisplacement", TorCAN.INSTANCE.getDisplacement());
+//				SmartDashboard.putNumber("getVelocity", TorCAN.INSTANCE.getVelocity());
+//				SmartDashboard.putNumber("getAcceleration", ((TorCAN.INSTANCE.getVelocity() - lastVelocity) / dt));
+//				lastVelocity = TorCAN.INSTANCE.getVelocity();
+				
+				displacementError = targetDisplacement - TorCAN.INSTANCE.getDisplacement();
+				totalDisplacementError += displacementError*dt;
+				
+				v = targetVelocity 
+						+ (kA * (targetAcceleration *(1.0 + 0.5*Math.pow(targetVelocity, 2))))
+						+ (kP * displacementError) 
+						+ (kI * totalDisplacementError)
+						+ (kD * (((displacementError - lastDisplacementError) / (dt))));
 
-				displacementError = targetDisplacement - m_jagDrive.getDisplacement();
-				totalError += displacementError;
-				v = targetVelocity + (kA * targetAcceleration) + (kP * displacementError) + (kI * totalError) + (kD * (((displacementError - lastDisplacementError) / (dt))));
+				targetHeading = TorMotionProfile.lookUpHeading(currentTime);
+				while(targetHeading < 0) targetHeading += 2*Math.PI;
+				while(targetHeading > 2*Math.PI) targetHeading -= 2*Math.PI;
+				
+				targetOmega = TorMotionProfile.lookUpOmega(currentTime);
+				targetAlpha = TorMotionProfile.lookUpAlpha(currentTime);
+				currentHeading = TorCAN.INSTANCE.getHeading();
+				
+			//	while(currentHeading < 0){currentHeading += 2*Math.PI;}
+			//	while(currentHeading > 2*Math.PI){currentHeading -= 2*Math.PI;}
 
-				omega = 0;
-//				}
-//				else if(TorMotionProfile.isRotationalTrajectory()){
-//					headingError = targetDisplacement - m_jagDrive.getHeading();
-//					totalError += displacementError;
-//					omega = targetVelocity + (kP * headingError) + (kI * totalError) + (kD * (headingError - lastHeadingError));
-//					v = 0;
-//				}
-				SmartDashboard.putNumber("targetVelocity", targetVelocity);
-				m_jagDrive.setTargets(v, omega);
+				headingError = (targetHeading - currentHeading);
+				if (Math.abs(headingError) > (Math.PI)) {
+					if (headingError > 0.0D) {
+						headingError -= (2*(Math.PI));
+					} else {
+						headingError += (2*(Math.PI));
+					}
+				}
+				totalHeadingError += headingError*dt;
+				
+				SmartDashboard.putNumber("targetOmega", targetOmega);
+				SmartDashboard.putNumber("targetAlpha", targetAlpha);
+				SmartDashboard.putNumber("targetHeading", targetHeading);
+				SmartDashboard.putNumber("getHeading", currentHeading);
+				SmartDashboard.putNumber("getOmega", TorCAN.INSTANCE.getOmega());
+				SmartDashboard.putNumber("getAlpha", ((TorCAN.INSTANCE.getOmega() - lastOmega) / dt));
+				lastOmega = TorCAN.INSTANCE.getOmega();
+				
+				w = targetOmega 
+						+ (ka * (targetAlpha *(1.0 + 0.5*Math.pow(targetOmega, 2))))
+						+ (kp * headingError) 
+						+ (ki * totalHeadingError)
+						+ (kd * (((headingError - lastHeadingError) / (dt))));
+
+				TorCAN.INSTANCE.setTargets(v, w);
+				
 				lastDisplacementError = displacementError;
 				lastHeadingError = headingError;
-			}
-			else{
-				TorMotionProfile.setWayPoint(m_jagDrive.getDisplacement());
 			}
 		}
 	}
 	Notifier mpNotifier = new Notifier(new PeriodicRunnable());
 
-	public TorDrive(Joystick stick, Joystick stick2, TorCAN cans, Encoder encoder, Solenoid shift, double approximateSensorSpeed)
+	public TorDrive(Joystick stick, Solenoid shift, double approximateSensorSpeed)
 	{
 		joystickProfile = new TorJoystickProfiles();
-		trajectory = new LinearTrajectory(1.0);
+		linearTrajectory = new LinearTrajectory(2.0);
+		pivotTrajectory = new PivotTrajectory(90);
+		stationaryTraj = new StationaryTrajectory();
+		
 		maxThrottle = (5.0/6.0) * (joystickProfile.getMinTurnRadius() / (joystickProfile.getMinTurnRadius() + halfTrackWidth));
-		stick = this.stick;
-		overrideStick = stick2;
-		m_jagDrive = cans;
-		m_encoder = encoder;
+		
 		m_solenoidshift = shift;
 		this.approximateSensorSpeed = approximateSensorSpeed;
 		mpNotifier.startPeriodic(0.010);
-		stationaryTraj = new StationaryTrajectory();
 	}
 	
-	public TorDrive(Joystick stick, TorCAN cans, CANTalon rightTalon, CANTalon leftTalon){
-		this.stick = stick;
-		m_jagDrive = cans;
-		this.rightTalon = rightTalon;
-		this.leftTalon = leftTalon;
-	}
 	
 	public void driving(double throttleAxis, double arcadeSteerAxis, double carSteerAxis, boolean shiftButton, double rightTrigger,
 			boolean buttonA, boolean buttonB, boolean buttonX, boolean buttonY, boolean rightBumper){
@@ -140,7 +167,6 @@ public class TorDrive
 		else{	
 			ArcadeDrive(throttleAxis, arcadeSteerAxis);
 			
-			
 			//When you release the shiftButton (left bumper), then shift to high gear.
 			if(!shiftButton){
 				shiftToHighGear();
@@ -153,12 +179,10 @@ public class TorDrive
 	public void shiftToHighGear(){
 		if (!isHighGear){
 			m_solenoidshift.set(false);
-			m_jagDrive.chooseVelocityControl();
+			TorCAN.INSTANCE.chooseVelocityControl();
 			isHighGear = true;
-			m_jagDrive.resetEncoder();
-			TorMotionProfile.setWayPoint(0.0);
-			TorMotionProfile.turnOn();
 			stationaryTraj.execute();
+			TorMotionProfile.setActive();
 		}
 	}
 	
@@ -166,9 +190,9 @@ public class TorDrive
 	public void shiftToLowGear(){
 		if (isHighGear){
 			m_solenoidshift.set(true);
-			m_jagDrive.choosePercentVbus();
+			TorCAN.INSTANCE.choosePercentVbus();
 			isHighGear = false;
-			TorMotionProfile.turnOff();
+			TorMotionProfile.setInactive();
 		}
 	}
 
@@ -221,7 +245,7 @@ public class TorDrive
 				rightMotorSpeed = -Math.max(-throttleAxis, -arcadeSteerAxis);
 			}
 		}
-		m_jagDrive.SetDrive(rightMotorSpeed, -leftMotorSpeed);
+		TorCAN.INSTANCE.SetDrive(rightMotorSpeed, -leftMotorSpeed);
 	}
 
 	
@@ -253,19 +277,19 @@ public class TorDrive
 		}
 
 		//Setting the rightMotorSpeed and the leftMotorSpeed so that it actually drives.
-		m_jagDrive.SetDrive(rightMotorSpeed, -leftMotorSpeed);
+		TorCAN.INSTANCE.SetDrive(rightMotorSpeed, -leftMotorSpeed);
 		
 	}
 	
 	public void buttonDrive(boolean buttonA, boolean buttonB, boolean buttonX, boolean buttonY, double rightTrigger){
 		if(buttonB){
-
+			pivotTrajectory.execute();
 		}
 		else if(buttonX){
 
 		}
 		else if(buttonY){
-			trajectory.execute();
+			linearTrajectory.execute();
 		}
 		else if(buttonA){
 
