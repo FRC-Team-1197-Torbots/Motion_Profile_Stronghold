@@ -8,9 +8,9 @@ public class PivotTrajectory extends TorTrajectory {
 	public PivotTrajectory(double goal){
 		super(goal * (Math.PI/180.0));
 		type = new String("Pivot");
-		max_omg = Math.PI;
+		max_omg = 4.3 * 0.5;
 		max_alf = 2*(Math.PI);
-		max_jeta = 8*(Math.PI);
+		max_jeta = 6.0;
 		build();
 	}
 	
@@ -62,12 +62,12 @@ public class PivotTrajectory extends TorTrajectory {
 						+ 4 * max_jeta * max_jeta * adjusted_max_alf
 						* Math.abs(goal_pos))) / (2 * max_jeta));
 
-		int f0_length = (int) Math.round((dt + goal_pos / adjusted_max_omg) * (1/dt));
-		adjusted_max_omg = goal_pos/(f0_length * dt);
-		int f1_length = (int) Math.ceil((adjusted_max_omg / adjusted_max_alf) / dt);
-		int f2_length = (int) Math.ceil((adjusted_max_alf / max_jeta) / dt);
+		int f0_length = (int) Math.round((TorMotionProfile.getTimeInterval() + goal_pos / adjusted_max_omg) * (1/TorMotionProfile.getTimeInterval()));
+		adjusted_max_omg = goal_pos/(f0_length * TorMotionProfile.getTimeInterval());
+		int f1_length = (int) Math.ceil((adjusted_max_omg / adjusted_max_alf) / TorMotionProfile.getTimeInterval());
+		int f2_length = (int) Math.ceil((adjusted_max_alf / max_jeta) / TorMotionProfile.getTimeInterval());
 		int time = (int) (Math.ceil(f1_length + f2_length + f0_length));
-		secondOrderFilter(f0_length, f1_length, f2_length, dt, adjusted_max_omg, time);
+		secondOrderFilter(f0_length, f1_length, f2_length, TorMotionProfile.getTimeInterval(), adjusted_max_omg, time);
 	}
 	
 	protected void secondOrderFilter(int f0_length, int f1_length, int f2_length, double dt, double max_omg, int length) {
@@ -124,13 +124,13 @@ public class PivotTrajectory extends TorTrajectory {
 			omg = FL2out;
 			omega.addElement(new Double(omg));
 			
-			head = (last_omg + omg) / 2.0 * dt + last_head;
+			head = (last_omg + omg) / 2.0 * TorMotionProfile.getTimeInterval() + last_head;
 			heading.addElement(new Double(head));
 			
-			alf = (omg - last_omg) / dt;
+			alf = (omg - last_omg) / TorMotionProfile.getTimeInterval();
 			alpha.addElement(new Double(alf));
 
-			jeta = (alf - last_alf) / dt;
+			jeta = (alf - last_alf) / TorMotionProfile.getTimeInterval();
 		}
 		if(goal_pos < 0.0){
 			for(int i = 0; i < length; i++){
@@ -146,7 +146,7 @@ public class PivotTrajectory extends TorTrajectory {
 		time.clear();
 		isLast.clear();
 		for(int i = 0; i < length; i++){
-			time.addElement(new Long(startTime + (10 * i)));
+			time.addElement(new Long(startTime + (long)(1000 * i * TorMotionProfile.getTimeInterval())));
 			isLast.addElement(false);
 			if(i + 1 == length){
 				isLast.set(i, true);

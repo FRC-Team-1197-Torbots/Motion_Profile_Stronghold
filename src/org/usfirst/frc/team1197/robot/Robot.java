@@ -15,6 +15,7 @@ public class Robot extends SampleRobot {
 	public Robot() {
 		stick = new Joystick(0);	
 		S1 = new Solenoid(0);		
+		compressor = new Compressor();
 		drive = new TorDrive(stick, S1, approximateSensorSpeed); 
 	}
 
@@ -32,8 +33,9 @@ public class Robot extends SampleRobot {
 	}
 
 	public void test() {
-		compressor = new Compressor();
-		compressor.start();
+		while(isEnabled()){
+			compressor.start();
+		}
 	}
 
 	//Low-gear software wise, High-gear mechanically

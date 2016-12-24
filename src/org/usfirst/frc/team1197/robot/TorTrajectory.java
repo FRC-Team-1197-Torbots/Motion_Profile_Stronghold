@@ -1,10 +1,10 @@
+
 package org.usfirst.frc.team1197.robot;
 
 import java.util.Vector;
 import java.util.List;
 
 public abstract class TorTrajectory {
-	
 	protected double goal_pos = 0.0;
 	
 	protected double max_vel = 1000.0;
@@ -14,8 +14,6 @@ public abstract class TorTrajectory {
 	protected double max_omg;
 	protected double max_alf;
 	protected double max_jeta;
-	
-	protected static final double dt = 0.010;
 	
 	protected Vector<Long> time;
 	protected Vector<Boolean> isLast;

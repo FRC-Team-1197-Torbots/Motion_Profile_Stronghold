@@ -20,117 +20,13 @@ public class TorDrive
 	private double maxThrottle;
 	private double approximateSensorSpeed;
 
-	private double lastOmega;
-	
-	private double targetVelocity;
-	private double targetAcceleration;
-	private double targetDisplacement;
-	
-	private double targetOmega;
-	private double targetAlpha;
-	private double targetHeading;
-	
-	private double currentHeading;
-	
-	private double v;
-	private double w;
-	
-	private double displacementError;
-	private double headingError;
-	private double lastDisplacementError;
-	private double lastHeadingError;
-	private double totalDisplacementError;
-	private double totalHeadingError;
-	
-	private double kA = 0.2; //0.025
-	private double kP = 0.01;  //1.0
-	private double kI = 0.0;  //0.0
-	private double kD = 0.005;  //0.5
-
-	private double ka = 0.0;//0.2
-	private double kp = 0.0;//1.0
-	private double ki = 0.0;
-	private double kd = 0.0;//0.5
-
-	private double dt = 0.01;
-	
-	private TorTrajectory linearTrajectory;
-	private TorTrajectory pivotTrajectory;
-	
-	private long currentTime;
-	
-	private StationaryTrajectory stationaryTraj;
+	private static TorTrajectory linearTrajectory;
+	private static TorTrajectory pivotTrajectory;
+	private static StationaryTrajectory stationaryTraj;
 	
 	class PeriodicRunnable implements java.lang.Runnable {
 		public void run() {
-			if(TorMotionProfile.isActive()){
-				currentTime = System.currentTimeMillis();
-				currentTime = (currentTime - (currentTime % ((long)(dt * 1000))));
-				if(TorMotionProfile.lookUpIsLast(currentTime)){
-					stationaryTraj.execute();
-				}
-				
-				targetDisplacement = TorMotionProfile.lookUpDisplacement(currentTime);
-				targetVelocity = TorMotionProfile.lookUpVelocity(currentTime);
-				targetAcceleration = TorMotionProfile.lookUpAcceleration(currentTime);	
-				
-//				SmartDashboard.putNumber("targetVelocity", targetVelocity);
-//				SmartDashboard.putNumber("targetAcceleration", targetAcceleration);
-//				SmartDashboard.putNumber("targetDisplacement", targetDisplacement);
-//				SmartDashboard.putNumber("getDisplacement", TorCAN.INSTANCE.getDisplacement());
-//				SmartDashboard.putNumber("getVelocity", TorCAN.INSTANCE.getVelocity());
-//				SmartDashboard.putNumber("getAcceleration", ((TorCAN.INSTANCE.getVelocity() - lastVelocity) / dt));
-//				lastVelocity = TorCAN.INSTANCE.getVelocity();
-				
-				displacementError = targetDisplacement - TorCAN.INSTANCE.getDisplacement();
-				totalDisplacementError += displacementError*dt;
-				
-				v = targetVelocity 
-						+ (kA * (targetAcceleration *(1.0 + 0.5*Math.pow(targetVelocity, 2))))
-						+ (kP * displacementError) 
-						+ (kI * totalDisplacementError)
-						+ (kD * (((displacementError - lastDisplacementError) / (dt))));
-
-				targetHeading = TorMotionProfile.lookUpHeading(currentTime);
-				while(targetHeading < 0) targetHeading += 2*Math.PI;
-				while(targetHeading > 2*Math.PI) targetHeading -= 2*Math.PI;
-				
-				targetOmega = TorMotionProfile.lookUpOmega(currentTime);
-				targetAlpha = TorMotionProfile.lookUpAlpha(currentTime);
-				currentHeading = TorCAN.INSTANCE.getHeading();
-				
-			//	while(currentHeading < 0){currentHeading += 2*Math.PI;}
-			//	while(currentHeading > 2*Math.PI){currentHeading -= 2*Math.PI;}
-
-				headingError = (targetHeading - currentHeading);
-				if (Math.abs(headingError) > (Math.PI)) {
-					if (headingError > 0.0D) {
-						headingError -= (2*(Math.PI));
-					} else {
-						headingError += (2*(Math.PI));
-					}
-				}
-				totalHeadingError += headingError*dt;
-				
-				SmartDashboard.putNumber("targetOmega", targetOmega);
-				SmartDashboard.putNumber("targetAlpha", targetAlpha);
-				SmartDashboard.putNumber("targetHeading", targetHeading);
-				SmartDashboard.putNumber("getHeading", currentHeading);
-				SmartDashboard.putNumber("getOmega", TorCAN.INSTANCE.getOmega());
-				SmartDashboard.putNumber("getAlpha", ((TorCAN.INSTANCE.getOmega() - lastOmega) / dt));
-				lastOmega = TorCAN.INSTANCE.getOmega();
-				
-				w = targetOmega 
-						+ (ka * (targetAlpha *(1.0 + 0.5*Math.pow(targetOmega, 2))))
-						+ (kp * headingError) 
-						+ (ki * totalHeadingError)
-						+ (kd * (((headingError - lastHeadingError) / (dt))));
-
-				TorCAN.INSTANCE.setTargets(v, w);
-				
-				lastDisplacementError = displacementError;
-				lastHeadingError = headingError;
-			}
+			TorMotionProfile.run();
 		}
 	}
 	Notifier mpNotifier = new Notifier(new PeriodicRunnable());
@@ -138,15 +34,15 @@ public class TorDrive
 	public TorDrive(Joystick stick, Solenoid shift, double approximateSensorSpeed)
 	{
 		joystickProfile = new TorJoystickProfiles();
-		linearTrajectory = new LinearTrajectory(2.0);
-		pivotTrajectory = new PivotTrajectory(90);
+		linearTrajectory = new LinearTrajectory(3.0);
+		pivotTrajectory = new PivotTrajectory(180);
 		stationaryTraj = new StationaryTrajectory();
 		
 		maxThrottle = (5.0/6.0) * (joystickProfile.getMinTurnRadius() / (joystickProfile.getMinTurnRadius() + halfTrackWidth));
 		
 		m_solenoidshift = shift;
 		this.approximateSensorSpeed = approximateSensorSpeed;
-		mpNotifier.startPeriodic(0.010);
+		mpNotifier.startPeriodic(TorMotionProfile.getTimeInterval());
 	}
 	
 	

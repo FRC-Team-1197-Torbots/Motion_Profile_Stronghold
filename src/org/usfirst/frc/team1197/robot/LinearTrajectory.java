@@ -9,8 +9,8 @@ public class LinearTrajectory extends TorTrajectory{
 		super(goal);
 		type = new String("Linear");
 		max_vel = 2.5;
-		max_acc = 3.0;
-		max_jerk = 13.0;
+		max_acc = 6.0;
+		max_jerk = 6.0;
 		build();
 	}
 	
@@ -63,12 +63,12 @@ public class LinearTrajectory extends TorTrajectory{
 						+ 4 * max_jerk * max_jerk * adjusted_max_acc
 						* Math.abs(goal_pos))) / (2 * max_jerk));
 
-		int f0_length = (int) Math.round((dt + goal_pos / adjusted_max_vel) * (1/dt));
-		adjusted_max_vel = goal_pos/(f0_length * dt);
-		int f1_length = (int) Math.ceil((adjusted_max_vel / adjusted_max_acc) / dt);
-		int f2_length = (int) Math.ceil((adjusted_max_acc / max_jerk) / dt);
-		int time = (int) (Math.ceil(f1_length + f2_length + f0_length));
-		secondOrderFilter(f0_length, f1_length, f2_length, dt, adjusted_max_vel, time);
+		int f0_length = (int) Math.round((TorMotionProfile.getTimeInterval() + goal_pos / adjusted_max_vel) * (1/TorMotionProfile.getTimeInterval()));
+		adjusted_max_vel = goal_pos/(f0_length * TorMotionProfile.getTimeInterval());
+		int f1_length = (int) Math.ceil((adjusted_max_vel / adjusted_max_acc) / TorMotionProfile.getTimeInterval());
+		int f2_length = (int) Math.ceil((adjusted_max_acc / max_jerk) / TorMotionProfile.getTimeInterval());
+		int time = (int) (Math.ceil(f0_length + f1_length + f2_length));
+		secondOrderFilter(f0_length, f1_length, f2_length, TorMotionProfile.getTimeInterval(), adjusted_max_vel, time);
 	}
 	
 	protected void secondOrderFilter(int f0_length, int f1_length, int f2_length, double dt, double max_vel, int length) {
@@ -80,6 +80,8 @@ public class LinearTrajectory extends TorTrajectory{
 		for(int i = 0; i < f2_length; i++){
 			f2.add(new Double(0));
 		}
+		
+		long t = 0;
 		
 		double pos = 0.0;
 		double vel = 0.0;
@@ -124,13 +126,16 @@ public class LinearTrajectory extends TorTrajectory{
 			vel = FL2out;
 			velocity.addElement(new Double(vel));
 			
-			pos = (last_vel + vel) / 2.0 * dt + last_pos;
+			pos = (last_vel + vel) / 2.0 * TorMotionProfile.getTimeInterval() + last_pos;
 			displacement.addElement(new Double(pos));
 			
-			acc = (vel - last_vel) / dt;
+			acc = (vel - last_vel) / TorMotionProfile.getTimeInterval();
 			acceleration.addElement(new Double(acc));
 
-			jerk = (acc - last_acc) / dt;
+			jerk = (acc - last_acc) / TorMotionProfile.getTimeInterval();
+			
+//			time.addElement(new Long(t));
+//			t += (long) (1000 * TorMotionProfile.getTimeInterval());
 		}
 		
 		if(goal_pos < 0.0){
@@ -148,7 +153,7 @@ public class LinearTrajectory extends TorTrajectory{
 		time.clear();
 		isLast.clear();
 		for(int i = 0; i < length; i++){
-			time.addElement(new Long(startTime + (10 * i)));
+			time.addElement(new Long(startTime + (long)(1000 * i * TorMotionProfile.getTimeInterval())));
 			isLast.addElement(false);
 			if(i + 1 == length){
 				isLast.set(i, true);

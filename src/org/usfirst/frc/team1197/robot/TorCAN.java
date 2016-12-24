@@ -21,12 +21,14 @@ public enum TorCAN
 	private double approximateSensorSpeed = 4550.0;
 	private double quadEncNativeUnits = 512.0;
 	private double kF = (1023.0) / ((approximateSensorSpeed * quadEncNativeUnits) / (600.0));
-	private double kP = 2.0; //7.0mp, 2.0vel
-	private double kI = 0.0; //0.0mp, 0.0vel
-	private double kD = 50.0; //250.0mp, 20.0vel
+	private double kP = 0*1.5; //1.5 change it back down to 1.0 if you get the jitters
+	private double kI = 0.0; //0.0
+	private double kD = 0*50.0; //50.0
 	
 	private double trackWidth = 0.5525; //meters, in inches 21.75
 	private double halfTrackWidth = trackWidth / 2.0;
+	
+	private double backlash = 0.015;
 	
 	private TorCAN(){
 		
@@ -63,8 +65,8 @@ public enum TorCAN
 		m_Ltalon2.changeControlMode(CANTalon.TalonControlMode.Follower);
 		m_Ltalon2.set(m_Ltalon1.getDeviceID());
 
-		m_Rtalon1.setStatusFrameRateMs(StatusFrameRate.QuadEncoder, 10);
-		m_Ltalon1.setStatusFrameRateMs(StatusFrameRate.QuadEncoder, 10);
+		m_Rtalon1.setStatusFrameRateMs(StatusFrameRate.QuadEncoder, 2);
+		m_Ltalon1.setStatusFrameRateMs(StatusFrameRate.QuadEncoder, 2);
 	}
 
 	public void SetDrive(double leftSpeed, double rightSpeed)
@@ -115,10 +117,11 @@ public enum TorCAN
 		return (gyro.getAngle() * (Math.PI / 180));
 	}
 	public double getOmega(){
-		return (gyro.getRate() * (Math.PI/180));
+		return (gyro.getRate());
 	}
 	
-	public void setTargets(double v, double omega){
+	//1.555 is the conversion factor that we found experimentally.
+	public void setTargets(double v, double omega){ 
 		m_Rtalon1.set(-(v - omega * halfTrackWidth) * 0.1 * encoderTicksPerMeter);
 		m_Ltalon1.set(-(v + omega * halfTrackWidth) * 0.1 * encoderTicksPerMeter);
 	}
@@ -130,5 +133,9 @@ public enum TorCAN
 	
 	public void resetHeading(){
 		gyro.reset();
+	}
+	
+	public double getBacklash(){
+		return backlash;
 	}
 }
