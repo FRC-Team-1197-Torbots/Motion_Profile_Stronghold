@@ -17,7 +17,7 @@ public class LinearTrajectory extends TorTrajectory{
 	public boolean lookUpIsLast(long t){
 		int i = time.indexOf(t);
 		if(i == -1){
-			return true;
+			return true;//TODO: explain why 
 		}
 		return isLast.elementAt(i);
 	}

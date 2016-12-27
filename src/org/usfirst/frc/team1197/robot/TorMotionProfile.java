@@ -35,17 +35,19 @@ public class TorMotionProfile {
 	private static double lastHeadingError;
 	private static double totalDisplacementError;
 	private static double totalHeadingError;
+	private static double omegaError;
 	
-	private static double kA = 0*0.02; //0.02
-	private static double kP = 0*1.5;  //2.0
-	private static double kI = 0*0.0;  //0.0
-	private static double kD = 0*0.5;  //0.5
-
-	private static double kw = 10.0;
-	private static double ka = 0*1.8;//0.05
-	private static double kp = 0*2.3;//1.0
-	private static double ki = 0.0;
-	private static double kd = 0*1.1;//0.5
+	private static double kA = 0.02; //0.02
+	private static double kP = 1.5;  //1.5
+	private static double kI = 0.0;  //0.0
+	private static double kD = 0.5;  //0.5
+	
+	private static double ka = 0.1; //0.1
+	private static double kp = 5.0; //5.0
+	private static double ki = 0.0; //0.0
+	private static double kd = 0.2; //0.2
+	
+	private static double minTurnOutput = 0.6; //0.6
 
 	private static double dt = 0.005;
 	
@@ -207,11 +209,25 @@ public class TorMotionProfile {
 			
 //			System.out.println(currentOmega);
 			
-			w = kw * targetOmega 
-					+ (ka * (targetAlpha *(1.0 + 0.5*Math.pow(targetOmega, 2))))
+
+			
+			w = targetOmega 
+					+ (ka * (targetAlpha *(1.0 + 0.0*0.5*Math.pow(targetOmega, 2))))
 					+ (kp * headingError) 
 					+ (ki * totalHeadingError)
 					+ (kd * dHeadErrordt);
+			
+			if(Math.abs(targetOmega) > 0.0){
+				if(w < 0.0){
+					w -= minTurnOutput;
+				}
+				else if(w > 0.0){
+					w += minTurnOutput;
+				}
+				else{
+					w = 0.0;
+				}
+			}
 
 			TorCAN.INSTANCE.setTargets(v, w);
 			

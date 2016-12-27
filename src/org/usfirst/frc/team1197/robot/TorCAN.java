@@ -21,9 +21,9 @@ public enum TorCAN
 	private double approximateSensorSpeed = 4550.0;
 	private double quadEncNativeUnits = 512.0;
 	private double kF = (1023.0) / ((approximateSensorSpeed * quadEncNativeUnits) / (600.0));
-	private double kP = 0*1.5; //1.5 change it back down to 1.0 if you get the jitters
+	private double kP = 1.5; //1.5 change it back down to 1.0 if you get the jitters
 	private double kI = 0.0; //0.0
-	private double kD = 0*50.0; //50.0
+	private double kD = 50.0; //50.0
 	
 	private double trackWidth = 0.5525; //meters, in inches 21.75
 	private double halfTrackWidth = trackWidth / 2.0;

@@ -34,8 +34,8 @@ public class TorDrive
 	public TorDrive(Joystick stick, Solenoid shift, double approximateSensorSpeed)
 	{
 		joystickProfile = new TorJoystickProfiles();
-		linearTrajectory = new LinearTrajectory(3.0);
-		pivotTrajectory = new PivotTrajectory(180);
+		linearTrajectory = new LinearTrajectory(2.0);
+		pivotTrajectory = new PivotTrajectory(270);
 		stationaryTraj = new StationaryTrajectory();
 		
 		maxThrottle = (5.0/6.0) * (joystickProfile.getMinTurnRadius() / (joystickProfile.getMinTurnRadius() + halfTrackWidth));
