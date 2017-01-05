@@ -145,7 +145,7 @@ public class TorMotionProfile {
 //			SmartDashboard.putNumber("displacementError", displacementError);
 
 			totalDisplacementError += displacementError * dt;
-			dDispErrordt = displacementDerivative.Estimate(displacementError);
+			dDispErrordt = displacementDerivative.estimate(displacementError);
 			
 			//TODO figure why we need to do this.
 			if(Math.abs(dDispErrordt) > 5.0){ 
@@ -191,7 +191,7 @@ public class TorMotionProfile {
 				}
 			}
 			totalHeadingError += headingError*dt;
-			dHeadErrordt = headingDerivative.Estimate(headingError);
+			dHeadErrordt = headingDerivative.estimate(headingError);
 			
 			//TODO figure out why we need to do this
 			if(Math.abs(dHeadErrordt) > 5.0){
