@@ -44,6 +44,12 @@ public abstract class TorTrajectory {
 	
 	public TorTrajectory(double goal){
 		goal_pos = goal;
+		max_vel = 2.5;
+		max_acc = 6.0;
+		max_jerk = 12.0;
+		max_omg = 4.3 * 0.5; //4.3 * 0.5
+		max_alf = 2*(Math.PI); //2*(Math.PI)
+		max_jeta = 6.0; //6.0
 		type = new String("null");
 		
 		time = new Vector<Long>();

@@ -9,9 +9,6 @@ public class LinearTrajectory extends TorTrajectory{
 	public LinearTrajectory(double goal) {
 		super(goal);
 		type = new String("Linear");
-		max_vel = 2.5;
-		max_acc = 6.0;
-		max_jerk = 12.0;
 		build(goal_pos, max_vel, max_acc, max_jerk, displacement, velocity, acceleration);
 	}
 	
