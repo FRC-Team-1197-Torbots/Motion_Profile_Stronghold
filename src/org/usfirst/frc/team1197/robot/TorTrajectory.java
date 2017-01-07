@@ -30,6 +30,18 @@ public abstract class TorTrajectory {
 	protected String type;
 	protected double dt = TorMotionProfile.INSTANCE.getTimeInterval();
 	
+	public class Motion {
+		public double pos;
+		public double vel;
+		public double acc;
+		
+		public Motion(double p, double v, double a){
+			pos = p;
+			vel = v;
+			acc = a;
+		}
+	}
+	
 	public TorTrajectory(double goal){
 		goal_pos = goal;
 		type = new String("null");
