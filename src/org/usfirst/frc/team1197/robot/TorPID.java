@@ -96,10 +96,6 @@ public class TorPID {
 		else
 			dErrordt = (error-last_error)/dt;
 		last_error = error;
-		//TODO URGENT! Figure why we need to do this:
-		if(Math.abs(dErrordt) > 5.0){ 
-			dErrordt = 0.0;
-		}
 		
 		// Finally, calculate output:
 		v = velTarget
@@ -234,5 +230,10 @@ public class TorPID {
 	
 	public double acceleration(){
 		return acc;
+	}
+	
+	public void reset(){
+		PositionDerivative.reset();
+		errorIntegral = 0;
 	}
 }

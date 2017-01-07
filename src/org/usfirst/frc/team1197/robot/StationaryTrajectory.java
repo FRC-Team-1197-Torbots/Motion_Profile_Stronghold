@@ -31,7 +31,7 @@ public class StationaryTrajectory extends TorTrajectory{
 	}
 	
 	public void execute(){
-		TorMotionProfile.loadTrajectory(this);
+		TorMotionProfile.INSTANCE.loadTrajectory(this);
 	}
 
 }

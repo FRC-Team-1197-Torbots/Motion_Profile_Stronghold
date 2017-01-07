@@ -24,9 +24,12 @@ public class TorDrive
 	private static TorTrajectory pivotTrajectory;
 	private static StationaryTrajectory stationaryTraj;
 	
+	private boolean buttonYlast;
+	private boolean buttonBlast;
+	
 	class PeriodicRunnable implements java.lang.Runnable {
 		public void run() {
-			TorMotionProfile.run();
+			TorMotionProfile.INSTANCE.run();
 		}
 	}
 	Notifier mpNotifier = new Notifier(new PeriodicRunnable());
@@ -42,7 +45,7 @@ public class TorDrive
 		
 		m_solenoidshift = shift;
 		this.approximateSensorSpeed = approximateSensorSpeed;
-		mpNotifier.startPeriodic(TorMotionProfile.getTimeInterval());
+		mpNotifier.startPeriodic(TorMotionProfile.INSTANCE.getTimeInterval());
 	}
 	
 	
@@ -78,7 +81,7 @@ public class TorDrive
 			TorCAN.INSTANCE.chooseVelocityControl();
 			isHighGear = true;
 			stationaryTraj.execute();
-			TorMotionProfile.setActive();
+			TorMotionProfile.INSTANCE.setActive();
 		}
 	}
 	
@@ -88,7 +91,8 @@ public class TorDrive
 			m_solenoidshift.set(true);
 			TorCAN.INSTANCE.choosePercentVbus();
 			isHighGear = false;
-			TorMotionProfile.setInactive();
+			stationaryTraj.execute();
+			TorMotionProfile.INSTANCE.setInactive();
 		}
 	}
 
@@ -178,20 +182,22 @@ public class TorDrive
 	}
 	
 	public void buttonDrive(boolean buttonA, boolean buttonB, boolean buttonX, boolean buttonY, double rightTrigger){
-		if(buttonB){
+		if(buttonB && !buttonBlast){
 			pivotTrajectory.execute();
 		}
 		else if(buttonX){
 
 		}
-		else if(buttonY){
+		else if(buttonY && !buttonYlast){
 			linearTrajectory.execute();
 		}
 		else if(buttonA){
 
 		}
 		else{
-		
+			
 		}
+		buttonBlast = buttonB;
+		buttonYlast = buttonY;
 	}
 }
