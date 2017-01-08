@@ -23,7 +23,7 @@ public class TorDrive
 
 	private static TorTrajectory linearTrajectory;
 	private static TorTrajectory pivotTrajectory;
-	public TorTrajectory stationaryTraj;
+	private static StationaryTrajectory stationaryTraj;
 	
 	private boolean buttonYlast;
 	private boolean buttonBlast;
@@ -46,7 +46,7 @@ public class TorDrive
 		
 		m_solenoidshift = shift;
 		this.approximateSensorSpeed = approximateSensorSpeed;
-		mpNotifier.startPeriodic(TorMotionProfile.INSTANCE.getTimeInterval());
+		mpNotifier.startPeriodic(0.005);
 	}
 	
 	
@@ -54,8 +54,8 @@ public class TorDrive
 			boolean buttonA, boolean buttonB, boolean buttonX, boolean buttonY, boolean rightBumper){
 		//Only switch to carDrive in high gear
 		if(isHighGear){
-//			carDrive(throttleAxis, carSteerAxis);
-			buttonDrive(buttonA, buttonB, buttonX, buttonY, rightTrigger);
+			carDrive(throttleAxis, carSteerAxis);
+//			buttonDrive(buttonA, buttonB, buttonX, buttonY, rightTrigger);
 			
 			//When you hold down the shiftButton (left bumper), then shift to low gear.
 			if(shiftButton){
@@ -82,7 +82,7 @@ public class TorDrive
 			TorCAN.INSTANCE.chooseVelocityControl();
 			isHighGear = true;
 			stationaryTraj.execute();
-//			TorMotionProfile.INSTANCE.joystickTraj.execute(0.0, 0.0, 0.0, 0.0);
+			TorMotionProfile.INSTANCE.joystickTraj.execute(0.0, 0.0, 0.0, 0.0);
 			TorMotionProfile.INSTANCE.setActive();
 		}
 	}
@@ -182,7 +182,7 @@ public class TorDrive
 
 		//Setting the rightMotorSpeed and the leftMotorSpeed so that it actually drives.
 //		TorCAN.INSTANCE.SetDrive(rightMotorSpeed, -leftMotorSpeed);
-		//TorMotionProfile.INSTANCE.joystickTraj.setTargets(targetSpeed, targetOmega);
+		TorMotionProfile.INSTANCE.joystickTraj.setTargets(targetSpeed, targetOmega);
 		
 	}
 	

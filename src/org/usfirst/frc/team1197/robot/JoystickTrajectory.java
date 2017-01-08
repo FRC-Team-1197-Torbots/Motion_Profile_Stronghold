@@ -8,7 +8,7 @@ public class JoystickTrajectory extends TorTrajectory{
 	private double tgt_omg;
 	
 	public JoystickTrajectory(){
-		super(0.0);
+//		super(0.0);
 		linearMotion = new Motion(0.0, 0.0, 0.0);
 		rotationalMotion = new Motion(0.0, 0.0, 0.0);
 	}
@@ -55,7 +55,6 @@ public class JoystickTrajectory extends TorTrajectory{
 	}
 	
 	public void update(double tgt_vel, Motion m){
-		System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 		// Target (requested) acceleration:
 		double tgt_acc = (tgt_vel - m.vel) / dt;
 		double a_sign = sign(tgt_acc);
@@ -75,12 +74,10 @@ public class JoystickTrajectory extends TorTrajectory{
 	
 	public void updateVelocity(){
 		update(tgt_vel, linearMotion);
-		System.out.println("Velocity: " + linearMotion.vel);
 	}
 	
 	public void updateOmega(){
 		update(tgt_omg, rotationalMotion);
-		System.out.println("Omega: " + rotationalMotion.vel);
 	}
 	
 	private double sign(double x){

@@ -40,7 +40,8 @@ public enum TorMotionProfile
 	private long currentTime;
 	private long lastTime;
 	
-//	public JoystickTrajectory joystickTraj;
+	public JoystickTrajectory joystickTraj;
+	private StationaryTrajectory stationaryTraj;
 	private TorDerivative displacementDerivative;
 	private TorDerivative headingDerivative;
 	private TorPID displacementPID;
@@ -51,11 +52,16 @@ public enum TorMotionProfile
 	private double velocityWaypoint;
 	private double omegaWaypoint;
 	
-	public TorTrajectory stationaryTraj;
-	
 	private boolean usingWaypoint = false;
 	
 	private TorMotionProfile(){
+		joystickTraj = new JoystickTrajectory();
+		stationaryTraj = new StationaryTrajectory();
+		displacementDerivative = new TorDerivative(getTimeInterval());
+		headingDerivative = new TorDerivative(getTimeInterval());
+		displacementPID = new TorPID(dt);
+		headingPID = new TorPID(dt);
+		
 		displacementPID.setLimitMode(sensorLimitMode.Default);
 		displacementPID.setNoiseMode(sensorNoiseMode.Noisy);
 		displacementPID.setBacklash(0.0);
@@ -79,13 +85,6 @@ public enum TorMotionProfile
 		headingPID.setkD(kd);
 		headingPID.setkPv(kpv);
 		headingPID.setkA(ka);
-		
-//		joystickTraj = new JoystickTrajectory();
-		stationaryTraj = new StationaryTrajectory();
-		displacementDerivative = new TorDerivative(getTimeInterval());
-		headingDerivative = new TorDerivative(getTimeInterval());
-		displacementPID = new TorPID(dt);
-		headingPID = new TorPID(dt);
 	}
 	
 	public double lookUpDisplacement(long t){
@@ -148,12 +147,12 @@ public enum TorMotionProfile
 			displacementPID.updateDt(dt);
 			headingPID.updateDt(dt);
 			
-//			joystickTraj.updateVelocity();
-//			joystickTraj.updateOmega();
+			joystickTraj.updateVelocity();
+			joystickTraj.updateOmega();
 			
 			//Displacement
 			displacementPID.updatePosition(TorCAN.INSTANCE.getDisplacement());
-//			displacementPID.updateVelocity(TorCAN.INSTANCE.getVelocity());
+			displacementPID.updateVelocity(TorCAN.INSTANCE.getVelocity());
 
 			targetDisplacement = lookUpDisplacement(currentTime) + displacementWaypoint;
 			targetVelocity = lookUpVelocity(currentTime);
@@ -184,14 +183,14 @@ public enum TorMotionProfile
 			headingPID.updateVelocityTarget(targetOmega);
 			headingPID.updateAccelerationTarget(targetAlpha);	
 
-						SmartDashboard.putNumber("targetOmega", targetOmega);
-			//			SmartDashboard.putNumber("targetAlpha", targetAlpha);
-			//			SmartDashboard.putNumber("targetHeading", targetHeading);
-						SmartDashboard.putNumber("currentOmega", headingPID.velocity());
-			//			SmartDashboard.putNumber("currentAlpha", headingPID.acceleration());
-			//			SmartDashboard.putNumber("currentHeading", headingPID.position());
-			//			SmartDashboard.putNumber("dHeadErrordt", headingPID.dErrodt());
-			//			SmartDashboard.putNumber("headingError", headingPID.error());
+//			SmartDashboard.putNumber("targetOmega", targetOmega);
+//			SmartDashboard.putNumber("targetAlpha", targetAlpha);
+//			SmartDashboard.putNumber("targetHeading", targetHeading);
+//			SmartDashboard.putNumber("currentOmega", headingPID.velocity());
+//			SmartDashboard.putNumber("currentAlpha", headingPID.acceleration());
+//			SmartDashboard.putNumber("currentHeading", headingPID.position());
+//			SmartDashboard.putNumber("dHeadErrordt", headingPID.dErrodt());
+//			SmartDashboard.putNumber("headingError", headingPID.error());
 
 			displacementPID.update();
 			headingPID.update();
@@ -202,8 +201,8 @@ public enum TorMotionProfile
 						displacementWaypoint += lookUpDisplacement(-1);
 						headingWaypoint += lookUpDisplacement(-1);
 					}	
-					stationaryTraj.execute();
-//					joystickTraj.execute();
+//					stationaryTraj.execute();
+					joystickTraj.execute();
 				}
 			}
 		}

@@ -6,11 +6,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 public abstract class TorTrajectory {
-	protected double goal_pos = 1.0;
+	protected double goal_pos = 0.0;
 	
-	protected double max_vel = 1.0;
-	protected double max_acc = 1.0;
-	protected double max_jerk = 1.0;
+	protected double max_vel = 1000.0;
+	protected double max_acc = 1000.0;
+	protected double max_jerk = 1000.0;
 	
 	protected double max_omg;
 	protected double max_alf;
@@ -27,7 +27,8 @@ public abstract class TorTrajectory {
 	protected Vector<Double> heading;
 	
 	protected static long startTime;
-	public double dt; // fix later
+	protected String type;
+	protected double dt = 0.005;
 	
 	public class Motion {
 		public double pos;
@@ -42,16 +43,17 @@ public abstract class TorTrajectory {
 	}
 	
 	public TorTrajectory(double goal){
-		dt = TorMotionProfile.INSTANCE.getTimeInterval();
 		goal_pos = goal;
 		
-		max_vel = 2.5;
-		max_acc = 6.0;
-		max_jerk = 12.0;
+		max_vel = 2.5; //2.5
+		max_acc = 6.0; //6.0 
+		max_jerk = 12.0; //12.0
 		
 		max_omg = 5.0; //4.3 * 0.5
 		max_alf = 2*(Math.PI); //2*(Math.PI)
 		max_jeta = 12.0; //6.0
+		
+		type = new String("null");
 		
 		time = new Vector<Long>();
 		
@@ -62,6 +64,10 @@ public abstract class TorTrajectory {
 		omega = new Vector<Double>();
 		alpha = new Vector<Double>();
 		heading = new Vector<Double>();
+	}
+	
+	public TorTrajectory(){
+		
 	}
 	
 	// The following magic was adapted from 254's TrajectoryLib.
@@ -161,7 +167,7 @@ public abstract class TorTrajectory {
 			pos = last_pos + 0.5 * (last_vel + vel) * dt;
 			displacement.addElement(new Double(pos));
 			// We have to differentiate to get acceleration:
-			acc = (vel - last_vel) / TorMotionProfile.INSTANCE.getTimeInterval();
+			acc = (vel - last_vel) / dt;
 			acceleration.addElement(new Double(acc));
 			t += (long)(dt * 1000);
 			time.addElement(new Long(t));
@@ -174,10 +180,14 @@ public abstract class TorTrajectory {
 		startTime = startTime - (startTime % 10);
 		int length = time.size();
 		for(int i = 0; i < length; i++){
-			t = (long)(TorMotionProfile.INSTANCE.getTimeInterval() * 1000 * i);
+			t = (long)(dt * 1000 * i);
 			time.set(i, startTime + t);
 		}
 		TorMotionProfile.INSTANCE.loadTrajectory(this);
+	}
+	
+	public double goalPos(){
+		return goal_pos;
 	}
 	
 	public abstract double lookUpDisplacement(long t);

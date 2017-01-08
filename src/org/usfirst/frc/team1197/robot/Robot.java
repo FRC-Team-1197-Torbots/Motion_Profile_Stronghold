@@ -1,7 +1,6 @@
 package org.usfirst.frc.team1197.robot;
 
 import edu.wpi.first.wpilibj.Compressor;
-
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.SampleRobot;
 import edu.wpi.first.wpilibj.Solenoid;

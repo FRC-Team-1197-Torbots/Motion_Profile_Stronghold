@@ -3,7 +3,8 @@ package org.usfirst.frc.team1197.robot;
 public class StationaryTrajectory extends TorTrajectory{
 	
 	public StationaryTrajectory() {
-		super(0);
+//		super(0);
+		type = new String("Stationary");
 	}
 	
 	public boolean lookUpIsLast(long t){
