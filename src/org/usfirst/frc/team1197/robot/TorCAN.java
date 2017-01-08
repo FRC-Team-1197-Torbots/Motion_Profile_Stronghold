@@ -1,10 +1,11 @@
 package org.usfirst.frc.team1197.robot;
 
+import com.ctre.CANTalon;
+import com.ctre.CANTalon.FeedbackDevice;
+import com.ctre.CANTalon.StatusFrameRate;
 import com.kauailabs.navx.frc.AHRS;
-import edu.wpi.first.wpilibj.CANTalon;
+
 import edu.wpi.first.wpilibj.SerialPort;
-import edu.wpi.first.wpilibj.CANTalon.FeedbackDevice;
-import edu.wpi.first.wpilibj.CANTalon.StatusFrameRate;
 
 public enum TorCAN
 {
