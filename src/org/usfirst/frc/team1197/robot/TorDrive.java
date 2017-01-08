@@ -14,6 +14,7 @@ public class TorDrive
 	private double leftMotorSpeed;
 	private TorJoystickProfiles joystickProfile;
 	private double targetSpeed;
+	private double targetOmega;
 	private double trackWidth = 0.5525; //meters, in inches 21.75
 	private double halfTrackWidth = trackWidth / 2.0;
 	private double centerRadius = 0.0;
@@ -22,7 +23,7 @@ public class TorDrive
 
 	private static TorTrajectory linearTrajectory;
 	private static TorTrajectory pivotTrajectory;
-	private static StationaryTrajectory stationaryTraj;
+	public TorTrajectory stationaryTraj;
 	
 	private boolean buttonYlast;
 	private boolean buttonBlast;
@@ -38,7 +39,7 @@ public class TorDrive
 	{
 		joystickProfile = new TorJoystickProfiles();
 		linearTrajectory = new LinearTrajectory(2.0);
-		pivotTrajectory = new PivotTrajectory(270);
+		pivotTrajectory = new PivotTrajectory(-270);
 		stationaryTraj = new StationaryTrajectory();
 		
 		maxThrottle = (5.0/6.0) * (joystickProfile.getMinTurnRadius() / (joystickProfile.getMinTurnRadius() + halfTrackWidth));
@@ -81,6 +82,7 @@ public class TorDrive
 			TorCAN.INSTANCE.chooseVelocityControl();
 			isHighGear = true;
 			stationaryTraj.execute();
+//			TorMotionProfile.INSTANCE.joystickTraj.execute(0.0, 0.0, 0.0, 0.0);
 			TorMotionProfile.INSTANCE.setActive();
 		}
 	}
@@ -166,18 +168,21 @@ public class TorDrive
 		//If the centerRadius is greater than the maxTurnRadius or the centerRadius is 0, then drive forward and vice versa.
 		if (Math.abs(centerRadius) > joystickProfile.getMaxTurnRadius() || Math.abs(centerRadius) == 0.0)
 		{
-			leftMotorSpeed = targetSpeed;
-			rightMotorSpeed = targetSpeed;
+//			leftMotorSpeed = targetSpeed;
+//			rightMotorSpeed = targetSpeed;
+			targetOmega = 0.0;
 		}
 		
 		//Else, steer
 		else {
-			rightMotorSpeed = targetSpeed * ((centerRadius - halfTrackWidth) / centerRadius);
-			leftMotorSpeed = targetSpeed * ((centerRadius + halfTrackWidth) / centerRadius);
+//			rightMotorSpeed = targetSpeed * ((centerRadius - halfTrackWidth) / centerRadius);
+//			leftMotorSpeed = targetSpeed * ((centerRadius + halfTrackWidth) / centerRadius);
+			targetOmega = targetSpeed / centerRadius;
 		}
 
 		//Setting the rightMotorSpeed and the leftMotorSpeed so that it actually drives.
-		TorCAN.INSTANCE.SetDrive(rightMotorSpeed, -leftMotorSpeed);
+//		TorCAN.INSTANCE.SetDrive(rightMotorSpeed, -leftMotorSpeed);
+		//TorMotionProfile.INSTANCE.joystickTraj.setTargets(targetSpeed, targetOmega);
 		
 	}
 	

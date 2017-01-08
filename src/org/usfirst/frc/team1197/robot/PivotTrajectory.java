@@ -7,7 +7,6 @@ public class PivotTrajectory extends TorTrajectory {
 	
 	public PivotTrajectory(double goal){
 		super(goal * (Math.PI/180.0));
-		type = new String("Pivot");
 		build(goal_pos, max_omg, max_alf, max_jeta, heading, omega, alpha);
 	}
 	

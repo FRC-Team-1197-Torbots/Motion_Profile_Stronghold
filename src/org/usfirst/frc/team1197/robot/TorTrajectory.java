@@ -6,11 +6,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 public abstract class TorTrajectory {
-	protected double goal_pos = 0.0;
+	protected double goal_pos = 1.0;
 	
-	protected double max_vel = 1000.0;
-	protected double max_acc = 1000.0;
-	protected double max_jerk = 1000.0;
+	protected double max_vel = 1.0;
+	protected double max_acc = 1.0;
+	protected double max_jerk = 1.0;
 	
 	protected double max_omg;
 	protected double max_alf;
@@ -27,8 +27,7 @@ public abstract class TorTrajectory {
 	protected Vector<Double> heading;
 	
 	protected static long startTime;
-	protected String type;
-	protected double dt = TorMotionProfile.INSTANCE.getTimeInterval();
+	public double dt; // fix later
 	
 	public class Motion {
 		public double pos;
@@ -43,14 +42,16 @@ public abstract class TorTrajectory {
 	}
 	
 	public TorTrajectory(double goal){
+		dt = TorMotionProfile.INSTANCE.getTimeInterval();
 		goal_pos = goal;
+		
 		max_vel = 2.5;
 		max_acc = 6.0;
 		max_jerk = 12.0;
-		max_omg = 4.3 * 0.5; //4.3 * 0.5
+		
+		max_omg = 5.0; //4.3 * 0.5
 		max_alf = 2*(Math.PI); //2*(Math.PI)
-		max_jeta = 6.0; //6.0
-		type = new String("null");
+		max_jeta = 12.0; //6.0
 		
 		time = new Vector<Long>();
 		
@@ -61,10 +62,6 @@ public abstract class TorTrajectory {
 		omega = new Vector<Double>();
 		alpha = new Vector<Double>();
 		heading = new Vector<Double>();
-	}
-	
-	public TorTrajectory(){
-		
 	}
 	
 	// The following magic was adapted from 254's TrajectoryLib.
@@ -181,10 +178,6 @@ public abstract class TorTrajectory {
 			time.set(i, startTime + t);
 		}
 		TorMotionProfile.INSTANCE.loadTrajectory(this);
-	}
-	
-	public double goalPos(){
-		return goal_pos;
 	}
 	
 	public abstract double lookUpDisplacement(long t);
