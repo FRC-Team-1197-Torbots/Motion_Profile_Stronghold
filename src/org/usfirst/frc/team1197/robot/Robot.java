@@ -20,7 +20,7 @@ public class Robot extends SampleRobot {
 	}
 
 	public void autonomous() {
-
+		
 	}
 
 	public void operatorControl() {

@@ -51,7 +51,7 @@ public abstract class TorTrajectory {
 		
 		max_omg = 5.0; //4.3 * 0.5
 		max_alf = 2*(Math.PI); //2*(Math.PI)
-		max_jeta = 12.0; //6.0
+		max_jeta = 8.0; //6.0
 		
 		type = new String("null");
 		

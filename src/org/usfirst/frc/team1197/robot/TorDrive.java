@@ -7,6 +7,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class TorDrive
 {	
+	public enum TEST
+	{
+		NULL, IDLE, POS1, POS2;
+		
+		private TEST(){}
+	}
+	private TEST teststates = TEST.IDLE;
 	private boolean isHighGear = true;
 	private Solenoid m_solenoidshift;
 
@@ -28,6 +35,8 @@ public class TorDrive
 	private boolean buttonYlast;
 	private boolean buttonBlast;
 	
+	private boolean executeOnce = true;
+	
 	class PeriodicRunnable implements java.lang.Runnable {
 		public void run() {
 			TorMotionProfile.INSTANCE.run();
@@ -38,8 +47,8 @@ public class TorDrive
 	public TorDrive(Joystick stick, Solenoid shift, double approximateSensorSpeed)
 	{
 		joystickProfile = new TorJoystickProfiles();
-		linearTrajectory = new LinearTrajectory(2.0);
-		pivotTrajectory = new PivotTrajectory(-270);
+		linearTrajectory = new LinearTrajectory(1.0);
+		pivotTrajectory = new PivotTrajectory(180);
 		stationaryTraj = new StationaryTrajectory();
 		
 		maxThrottle = (5.0/6.0) * (joystickProfile.getMinTurnRadius() / (joystickProfile.getMinTurnRadius() + halfTrackWidth));
@@ -54,8 +63,8 @@ public class TorDrive
 			boolean buttonA, boolean buttonB, boolean buttonX, boolean buttonY, boolean rightBumper){
 		//Only switch to carDrive in high gear
 		if(isHighGear){
-			carDrive(throttleAxis, carSteerAxis);
-//			buttonDrive(buttonA, buttonB, buttonX, buttonY, rightTrigger);
+//			carDrive(throttleAxis, carSteerAxis);
+			buttonDrive(buttonA, buttonB, buttonX, buttonY, rightTrigger);
 			
 			//When you hold down the shiftButton (left bumper), then shift to low gear.
 			if(shiftButton){
@@ -191,10 +200,39 @@ public class TorDrive
 			pivotTrajectory.execute();
 		}
 		else if(buttonX){
-
+			linearTrajectory.execute();
 		}
 		else if(buttonY && !buttonYlast){
-			linearTrajectory.execute();
+			teststates = TEST.IDLE;
+			while(teststates != TEST.NULL){
+				switch(teststates){
+				case NULL:
+					break;
+				case IDLE:
+					teststates = TEST.POS1;
+					break;
+				case POS1:
+					if(executeOnce){
+						linearTrajectory.execute();
+						executeOnce = false;
+					}
+					if(TorMotionProfile.INSTANCE.dispOnTarget() && TorMotionProfile.INSTANCE.lookUpIsLast()){
+						executeOnce = true;
+						teststates = TEST.POS2;
+					}
+					break;
+				case POS2:
+					if(executeOnce){
+						pivotTrajectory.execute();
+						executeOnce = false;
+					}
+					if(TorMotionProfile.INSTANCE.headOnTarget() && TorMotionProfile.INSTANCE.lookUpIsLast()){
+						executeOnce = true;
+						teststates = TEST.NULL;
+					}
+					break;
+				}
+			}
 		}
 		else if(buttonA){
 

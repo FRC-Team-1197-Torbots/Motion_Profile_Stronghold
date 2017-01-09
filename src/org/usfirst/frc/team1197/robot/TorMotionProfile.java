@@ -23,17 +23,17 @@ public enum TorMotionProfile
 	
 	private double kPv = 0.0;
 	private double kA = 0.02; //0.02
-	private double kP = 1.5;  //1.5
+	private double kP = 2.5;  //1.5
 	private double kI = 0.0;  //0.0
 	private double kD = 0.5;  //0.5
 	
 	private double kpv = 0.5;
-	private double ka = 0.02; //0.1
-	private double kp = 5.0; //5.0
+	private double ka = 0.01; //0.02
+	private double kp = 7.0; //5.0
 	private double ki = 0.0; //0.0
-	private double kd = 0.5; //0.2
+	private double kd = 0.1; //0.2
 	
-	private double minTurnOutput = 0.5; //0.6
+	private double minTurnOutput = 0.4; //0.6
 
 	private double dt = 0.005;
 	
@@ -201,8 +201,9 @@ public enum TorMotionProfile
 						displacementWaypoint += lookUpDisplacement(-1);
 						headingWaypoint += lookUpDisplacement(-1);
 					}	
-//					stationaryTraj.execute();
-					joystickTraj.execute();
+					System.out.println("!!!!!!!");
+					stationaryTraj.execute();
+//					joystickTraj.execute();
 				}
 			}
 		}
@@ -210,6 +211,18 @@ public enum TorMotionProfile
 			TorCAN.INSTANCE.resetEncoder();
 			TorCAN.INSTANCE.resetHeading();
 		}
+	}
+	
+	public boolean dispOnTarget(){
+		return displacementPID.isOnTarget();
+	}
+	
+	public boolean headOnTarget(){
+		return headingPID.isOnTarget();
+	}
+	
+	public boolean lookUpIsLast(){
+		return lookUpIsLast(currentTime);
 	}
 	
 	public void resetWaypoints(){
