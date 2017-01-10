@@ -200,39 +200,40 @@ public class TorDrive
 			pivotTrajectory.execute();
 		}
 		else if(buttonX){
-			linearTrajectory.execute();
+//			linearTrajectory.execute();
 		}
 		else if(buttonY && !buttonYlast){
-			teststates = TEST.IDLE;
-			while(teststates != TEST.NULL){
-				switch(teststates){
-				case NULL:
-					break;
-				case IDLE:
-					teststates = TEST.POS1;
-					break;
-				case POS1:
-					if(executeOnce){
-						linearTrajectory.execute();
-						executeOnce = false;
-					}
-					if(TorMotionProfile.INSTANCE.dispOnTarget() && TorMotionProfile.INSTANCE.lookUpIsLast()){
-						executeOnce = true;
-						teststates = TEST.POS2;
-					}
-					break;
-				case POS2:
-					if(executeOnce){
-						pivotTrajectory.execute();
-						executeOnce = false;
-					}
-					if(TorMotionProfile.INSTANCE.headOnTarget() && TorMotionProfile.INSTANCE.lookUpIsLast()){
-						executeOnce = true;
-						teststates = TEST.NULL;
-					}
-					break;
-				}
-			}
+//			teststates = TEST.IDLE;
+//			while(teststates != TEST.NULL){
+//				switch(teststates){
+//				case NULL:
+//					break;
+//				case IDLE:
+//					teststates = TEST.POS1;
+//					break;
+//				case POS1:
+//					if(executeOnce){
+//						linearTrajectory.execute();
+//						executeOnce = false;
+//					}
+//					if(TorMotionProfile.INSTANCE.dispOnTarget() && TorMotionProfile.INSTANCE.lookUpIsLast()){
+//						executeOnce = true;
+//						teststates = TEST.POS2;
+//					}
+//					break;
+//				case POS2:
+//					if(executeOnce){
+//						pivotTrajectory.execute();
+//						executeOnce = false;
+//					}
+//					if(TorMotionProfile.INSTANCE.headOnTarget() && TorMotionProfile.INSTANCE.lookUpIsLast()){
+//						executeOnce = true;
+//						teststates = TEST.NULL;
+//					}
+//					break;
+//				}
+//			}
+			linearTrajectory.execute();
 		}
 		else if(buttonA){
 

@@ -199,6 +199,9 @@ public abstract class TorTrajectory {
 	public abstract double lookUpHeading(long t);	
 	
 	public boolean lookUpIsLast(long t){
+		if(t < time.get(0)){
+			return false;
+		}
 		int i = time.indexOf(t);
 		if(i == -1){
 			return true;

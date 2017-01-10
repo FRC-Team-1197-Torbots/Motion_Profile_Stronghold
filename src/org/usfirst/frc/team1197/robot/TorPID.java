@@ -104,7 +104,9 @@ public class TorPID {
 				+ (kP * error) 
 				+ (kI * errorIntegral)
 				+ (kD * dErrordt);
-		if(Math.abs(velTarget) > 0.0){
+//		System.out.println("velTarget: " + velTarget);
+//		System.out.println("v: " + v);
+		if(Math.abs(velTarget) > 0.0 || error > posTolerance){
 			if(v < 0.0)
 				v -= minimumOutput;
 			else if(v > 0.0)

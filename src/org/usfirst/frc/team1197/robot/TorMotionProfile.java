@@ -21,19 +21,19 @@ public enum TorMotionProfile
 	private double targetAlpha;
 	private double targetHeading;
 	
-	private double kPv = 0.0;
-	private double kA = 0.02; //0.02
-	private double kP = 2.5;  //1.5
+	private double kPv = 0.0; //0.0
+	private double kA = 0.0; //0.0
+	private double kP = 1.0;  //1.0
 	private double kI = 0.0;  //0.0
-	private double kD = 0.5;  //0.5
+	private double kD = 0.4;  //0.4
 	
-	private double kpv = 0.5;
-	private double ka = 0.01; //0.02
-	private double kp = 7.0; //5.0
+	private double kpv = 0.5; //0.5
+	private double ka = 0.0; //0.0
+	private double kp = 7.0; //7.0
 	private double ki = 0.0; //0.0
-	private double kd = 0.1; //0.2
+	private double kd = 0.5; //0.5
 	
-	private double minTurnOutput = 0.4; //0.6
+	private double minTurnOutput = 0.4; //0.4
 
 	private double dt = 0.005;
 	
@@ -52,7 +52,7 @@ public enum TorMotionProfile
 	private double velocityWaypoint;
 	private double omegaWaypoint;
 	
-	private boolean usingWaypoint = false;
+	private boolean usingWaypoint = true;
 	
 	private TorMotionProfile(){
 		joystickTraj = new JoystickTrajectory();
@@ -183,14 +183,14 @@ public enum TorMotionProfile
 			headingPID.updateVelocityTarget(targetOmega);
 			headingPID.updateAccelerationTarget(targetAlpha);	
 
-//			SmartDashboard.putNumber("targetOmega", targetOmega);
-//			SmartDashboard.putNumber("targetAlpha", targetAlpha);
-//			SmartDashboard.putNumber("targetHeading", targetHeading);
-//			SmartDashboard.putNumber("currentOmega", headingPID.velocity());
-//			SmartDashboard.putNumber("currentAlpha", headingPID.acceleration());
-//			SmartDashboard.putNumber("currentHeading", headingPID.position());
-//			SmartDashboard.putNumber("dHeadErrordt", headingPID.dErrodt());
-//			SmartDashboard.putNumber("headingError", headingPID.error());
+			SmartDashboard.putNumber("targetOmega", targetOmega);
+			SmartDashboard.putNumber("targetAlpha", targetAlpha);
+			SmartDashboard.putNumber("targetHeading", targetHeading);
+			SmartDashboard.putNumber("currentOmega", headingPID.velocity());
+			SmartDashboard.putNumber("currentAlpha", headingPID.acceleration());
+			SmartDashboard.putNumber("currentHeading", headingPID.position());
+			SmartDashboard.putNumber("dHeadErrordt", headingWaypoint);
+			SmartDashboard.putNumber("headingError", headingPID.error());
 
 			displacementPID.update();
 			headingPID.update();
@@ -199,7 +199,7 @@ public enum TorMotionProfile
 				if(displacementPID.isOnTarget() && headingPID.isOnTarget()){
 					if (usingWaypoint){
 						displacementWaypoint += lookUpDisplacement(-1);
-						headingWaypoint += lookUpDisplacement(-1);
+						headingWaypoint += lookUpHeading(-1);
 					}	
 					System.out.println("!!!!!!!");
 					stationaryTraj.execute();
@@ -211,6 +211,10 @@ public enum TorMotionProfile
 			TorCAN.INSTANCE.resetEncoder();
 			TorCAN.INSTANCE.resetHeading();
 		}
+	}
+	
+	public boolean isComplete(){
+		return (activeTrajectory == stationaryTraj);
 	}
 	
 	public boolean dispOnTarget(){
