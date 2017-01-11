@@ -38,8 +38,8 @@ public enum TorMotionProfile
 	private double minTurnOutput = 0.4; //0.4
 
 	private double dt = 0.005;
-	
 	private long currentTime;
+	private long lookupTime;
 	private long lastTime;
 	
 	public JoystickTrajectory joystickTraj;
@@ -49,6 +49,7 @@ public enum TorMotionProfile
 	private TorPID displacementPID;
 	private TorPID headingPID;
 	
+	private static long startTime;
 	protected static double displacementWaypoint;
 	protected static double headingWaypoint;
 	private double velocityWaypoint;
@@ -144,7 +145,8 @@ public enum TorMotionProfile
 		if(isActive()){
 			currentTime = System.currentTimeMillis();
 			dt = (currentTime - lastTime) * 0.001;
-			currentTime = (currentTime - (currentTime % ((long)(getTimeInterval() * 1000))));
+			lastTime = currentTime; //Somehow this wasn't here before. How the heck did anything work???
+			lookupTime = (currentTime - (currentTime % ((long)(getTimeInterval() * 1000)))) - startTime;
 			
 			displacementPID.updateDt(dt);
 			headingPID.updateDt(dt);
@@ -157,9 +159,9 @@ public enum TorMotionProfile
 			displacementPID.updatePosition(TorCAN.INSTANCE.getDisplacement());
 			displacementPID.updateVelocity(TorCAN.INSTANCE.getVelocity());
 
-			targetDisplacement = lookUpDisplacement(currentTime) + displacementWaypoint;
-			targetVelocity = lookUpVelocity(currentTime);
-			targetAcceleration = lookUpAcceleration(currentTime);	
+			targetDisplacement = lookUpDisplacement(lookupTime) + displacementWaypoint;
+			targetVelocity = lookUpVelocity(lookupTime);
+			targetAcceleration = lookUpAcceleration(lookupTime);	
 
 			displacementPID.updatePositionTarget(targetDisplacement);
 			displacementPID.updateVelocityTarget(targetVelocity);
@@ -178,9 +180,9 @@ public enum TorMotionProfile
 			headingPID.updatePosition(TorCAN.INSTANCE.getHeading());
 			headingPID.updateVelocity(TorCAN.INSTANCE.getOmega());
 
-			targetHeading = lookUpHeading(currentTime) + headingWaypoint;
-			targetOmega = lookUpOmega(currentTime);
-			targetAlpha = lookUpAlpha(currentTime);	
+			targetHeading = lookUpHeading(lookupTime) + headingWaypoint;
+			targetOmega = lookUpOmega(lookupTime);
+			targetAlpha = lookUpAlpha(lookupTime);	
 
 			headingPID.updatePositionTarget(targetHeading);
 			headingPID.updateVelocityTarget(targetOmega);
@@ -198,8 +200,10 @@ public enum TorMotionProfile
 			displacementPID.update();
 			headingPID.update();
 			TorCAN.INSTANCE.setTargets(displacementPID.output(), headingPID.output());
-			if(lookUpIsLast(currentTime)){
+			if(lookUpIsLast(lookupTime)){
 				if(displacementPID.isOnTarget() && headingPID.isOnTarget()){
+					startTime = System.currentTimeMillis();
+					startTime = startTime - (startTime % ((long)(getTimeInterval() * 1000)));
 					if (usingWaypoint){
 						displacementWaypoint += lookUpDisplacement(-1);
 						headingWaypoint += lookUpHeading(-1);
@@ -207,8 +211,6 @@ public enum TorMotionProfile
 					System.out.println("IS ON TARGETTTTTTTTTTTTTTTTTTTTTTTT");
 					activeTrajectory = nextTrajectory;
 					nextTrajectory = stationaryTraj;
-//					stationaryTraj.execute();
-//					joystickTraj.execute();
 				}
 			}
 		}

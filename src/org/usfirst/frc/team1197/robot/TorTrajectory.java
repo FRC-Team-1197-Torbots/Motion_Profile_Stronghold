@@ -175,14 +175,14 @@ public abstract class TorTrajectory {
 	}
 	
 	public void execute(){
-		long t = 0;
-		startTime = System.currentTimeMillis();
-		startTime = startTime - (startTime % 10);
-		int length = time.size();
-		for(int i = 0; i < length; i++){
-			t = (long)(dt * 1000 * i);
-			time.set(i, startTime + t);
-		}
+//		long t = 0;
+//		startTime = System.currentTimeMillis();
+//		startTime = startTime - (startTime % 10); //TODO: SHOULDN'T THIS BE (have been) 5???
+//		int length = time.size();
+//		for(int i = 0; i < length; i++){
+//			t = (long)(dt * 1000 * i);
+//			time.set(i, startTime + t);
+//		}
 		TorMotionProfile.INSTANCE.loadTrajectory(this);
 	}
 	
