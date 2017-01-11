@@ -25,7 +25,7 @@ public enum TorMotionProfile
 	private double kA = 0.0; //0.0
 	private double kP = 1.0;  //1.0
 	private double kI = 0.0;  //0.0
-	private double kD = 0.4;  //0.4
+	private double kD = 0.2;  //0.4
 	
 	private double kpv = 0.5; //0.5
 	private double ka = 0.0; //0.0
@@ -33,6 +33,7 @@ public enum TorMotionProfile
 	private double ki = 0.0; //0.0
 	private double kd = 0.5; //0.5
 	
+	private double minLineOutput = 0.0; //0.085
 	private double minTurnOutput = 0.4; //0.4
 
 	private double dt = 0.005;
@@ -65,9 +66,9 @@ public enum TorMotionProfile
 		displacementPID.setLimitMode(sensorLimitMode.Default);
 		displacementPID.setNoiseMode(sensorNoiseMode.Noisy);
 		displacementPID.setBacklash(0.0);
-		displacementPID.setPositionTolerance(0.01);
-		displacementPID.setVelocityTolerance(0.01);
-		displacementPID.setMinimumOutput(0.0);
+		displacementPID.setPositionTolerance(0.015);
+		displacementPID.setVelocityTolerance(0.015);
+		displacementPID.setMinimumOutput(minLineOutput);
 		displacementPID.setkP(kP);
 		displacementPID.setkI(kI);
 		displacementPID.setkD(kD);
@@ -147,6 +148,7 @@ public enum TorMotionProfile
 			displacementPID.updateDt(dt);
 			headingPID.updateDt(dt);
 			
+			joystickTraj.updateDt(dt);
 			joystickTraj.updateVelocity();
 			joystickTraj.updateOmega();
 			
@@ -162,14 +164,14 @@ public enum TorMotionProfile
 			displacementPID.updateVelocityTarget(targetVelocity);
 			displacementPID.updateAccelerationTarget(targetAcceleration);
 
-//			SmartDashboard.putNumber("targetVelocity", targetVelocity);
-//			SmartDashboard.putNumber("targetAcceleration", targetAcceleration);
-//			SmartDashboard.putNumber("targetDisplacement", targetDisplacement);
-//			SmartDashboard.putNumber("currentVelocity", displacementPID.velocity());
-//			SmartDashboard.putNumber("currentAcceleration", displacementPID.acceleration());
-//			SmartDashboard.putNumber("currentDisplacement", displacementPID.position());
-//			SmartDashboard.putNumber("dDispErrordt", displacementPID.dErrodt());
-//			SmartDashboard.putNumber("displacementError", displacementPID.error());
+			SmartDashboard.putNumber("targetVelocity", targetVelocity);
+			SmartDashboard.putNumber("targetAcceleration", targetAcceleration);
+			SmartDashboard.putNumber("targetDisplacement", targetDisplacement);
+			SmartDashboard.putNumber("currentVelocity", displacementPID.velocity());
+			SmartDashboard.putNumber("currentAcceleration", displacementPID.acceleration());
+			SmartDashboard.putNumber("currentDisplacement", displacementPID.position());
+			SmartDashboard.putNumber("dDispErrordt", displacementPID.dErrodt());
+			SmartDashboard.putNumber("displacementError", displacementPID.error());
 
 			//Heading
 			headingPID.updatePosition(TorCAN.INSTANCE.getHeading());
@@ -183,14 +185,14 @@ public enum TorMotionProfile
 			headingPID.updateVelocityTarget(targetOmega);
 			headingPID.updateAccelerationTarget(targetAlpha);	
 
-			SmartDashboard.putNumber("targetOmega", targetOmega);
-			SmartDashboard.putNumber("targetAlpha", targetAlpha);
-			SmartDashboard.putNumber("targetHeading", targetHeading);
-			SmartDashboard.putNumber("currentOmega", headingPID.velocity());
-			SmartDashboard.putNumber("currentAlpha", headingPID.acceleration());
-			SmartDashboard.putNumber("currentHeading", headingPID.position());
-			SmartDashboard.putNumber("dHeadErrordt", headingWaypoint);
-			SmartDashboard.putNumber("headingError", headingPID.error());
+//			SmartDashboard.putNumber("targetOmega", targetOmega);
+//			SmartDashboard.putNumber("targetAlpha", targetAlpha);
+//			SmartDashboard.putNumber("targetHeading", targetHeading);
+//			SmartDashboard.putNumber("currentOmega", headingPID.velocity());
+//			SmartDashboard.putNumber("currentAlpha", headingPID.acceleration());
+//			SmartDashboard.putNumber("currentHeading", headingPID.position());
+//			SmartDashboard.putNumber("dHeadErrordt", headingWaypoint);
+//			SmartDashboard.putNumber("headingError", headingPID.error());
 
 			displacementPID.update();
 			headingPID.update();
@@ -201,7 +203,7 @@ public enum TorMotionProfile
 						displacementWaypoint += lookUpDisplacement(-1);
 						headingWaypoint += lookUpHeading(-1);
 					}	
-					System.out.println("!!!!!!!");
+					System.out.println("IS ON TARGETTTTTTTTTTTTTTTTTTTTTTTT");
 					stationaryTraj.execute();
 //					joystickTraj.execute();
 				}

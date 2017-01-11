@@ -69,7 +69,7 @@ public class JoystickTrajectory extends TorTrajectory{
 		// Velocity:
 		m.vel = m.vel + m.acc*dt + 0.5*jerk*dt*dt;
 		// Position:
-		m.pos = m.pos + m.vel*dt + 0.5*m.acc*dt*dt + 0.333333*jerk*dt*dt*dt;	
+		m.pos = m.pos + m.vel*dt + 0.5*m.acc*dt*dt + 0.1666667*jerk*dt*dt*dt;	
 	}
 	
 	public void updateVelocity(){
@@ -78,6 +78,10 @@ public class JoystickTrajectory extends TorTrajectory{
 	
 	public void updateOmega(){
 		update(tgt_omg, rotationalMotion);
+	}
+	
+	public void updateDt(double dt){
+		this.dt = dt;
 	}
 	
 	private double sign(double x){
