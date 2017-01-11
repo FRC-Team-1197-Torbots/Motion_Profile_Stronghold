@@ -10,6 +10,7 @@ package org.usfirst.frc.team1197.robot;
 
 public class TorDerivative {
 	// Arrays to keep track of variable history:
+	private double[] tData = new double[20];
 	private double[] yData = new double[20];
 	private double[] vData = new double[20];
 	
@@ -20,6 +21,7 @@ public class TorDerivative {
 
 	private double dt;
 	private double tMean;
+	private double mean;
 	private double v0;
 	private double a0;
 	private double v;
@@ -28,9 +30,8 @@ public class TorDerivative {
 		this.dt = dt;
 		tMean = (yData.length-1) * dt * 0.5;
 		// Note the symmetry between this and the SStx() method:
-		SStt = 0;
-	    for(int i = 0;  i < yData.length; i++){
-			SStt += (i*dt - tMean)*(i*dt - tMean);
+	    for(int i = 0;  i < tData.length; i ++){
+			tData[i] = i*dt;
 		}
 	}
 	
@@ -43,30 +44,38 @@ public class TorDerivative {
 		return mean;
 	}
 	
-	// Push() appends 'x' to the beginning of the array 'data', moves
-	// all elements forward, and discards the last element.
+	// Push() discards the first element of the array 'data', moves
+	// all elements backward one slot, and places 'x' in the last slot.
 	private void Push(double[] data, double x){
-		for(int i=data.length-1; i>0; i--){
-			data[i] = data[i - 1];
+		for(int i = 0; i < data.length - 2; i++){
+			data[i] = data[i + 1];
 		}
-		data[0] = x;
+		data[data.length-1] = x;
 	}
 	
 	private double SStx(double[] data){
-		double mean  = Mean(data);
+		if (data != tData)
+			mean = Mean(data);
+		else mean = tMean;
 		double sum = 0.0;
 	    for(int i=0; i<data.length; i++){
-			sum += (i*dt - tMean)*(data[i] - mean);
+			sum += (tData[i] - tMean)*(data[i] - mean);
 		}
 	    return sum;
 	}
 	
-	public double estimate(double y){
+	public double estimate(double y, double dt){
 		// This uses a least-squares formula to calculate best-fit slope.
 		// If you're not familiar with this technique, you can learn more
 		// here: http://mathworld.wolfram.com/LeastSquaresFitting.html
+		// Sum of Squares for time:
+		Push(tData, tData[tData.length - 1] + dt);
+		tMean = Mean(tData);
+		SStt = SStx(tData);
+		// Sum of squares for input variable:
 		Push(yData, y);
 		SSty = SStx(yData);
+		// Least-squares solution for slope:
 		v0 = SSty / SStt;
 		// Use another least-squares fit to find the "slope of the slope".
 		// (This is also the second derivative of y, or acceleration!):
