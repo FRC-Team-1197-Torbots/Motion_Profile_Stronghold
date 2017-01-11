@@ -11,6 +11,7 @@ public enum TorMotionProfile
 
 	private boolean isActive = false;
 	private TorTrajectory activeTrajectory = null;
+	private TorTrajectory nextTrajectory = null;
 	private final double timeInterval = 0.005;
 	
 	private double targetVelocity;
@@ -89,27 +90,27 @@ public enum TorMotionProfile
 	}
 	
 	public double lookUpDisplacement(long t){
-		return activeTrajectory.lookUpDisplacement(t);
+		return nextTrajectory.lookUpDisplacement(t);
 	}
 	public double lookUpVelocity(long t){
-		return activeTrajectory.lookUpVelocity(t);
+		return nextTrajectory.lookUpVelocity(t);
 	}
 	public double lookUpAcceleration(long t){
-		return activeTrajectory.lookUpAcceleration(t);
+		return nextTrajectory.lookUpAcceleration(t);
 	}
 	
 	public double lookUpHeading(long t){
-		return activeTrajectory.lookUpHeading(t);
+		return nextTrajectory.lookUpHeading(t);
 	}
 	public double lookUpOmega(long t){
-		return activeTrajectory.lookUpOmega(t);
+		return nextTrajectory.lookUpOmega(t);
 	}
 	public double lookUpAlpha(long t){
-		return activeTrajectory.lookUpAlpha(t);
+		return nextTrajectory.lookUpAlpha(t);
 	}
 	
 	public boolean lookUpIsLast(long t){
-		return activeTrajectory.lookUpIsLast(t);
+		return nextTrajectory.lookUpIsLast(t);
 	}
 	
 	public void loadTrajectory(TorTrajectory traj){
@@ -118,7 +119,7 @@ public enum TorMotionProfile
 			TorCAN.INSTANCE.resetHeading();
 			resetPID();
 		}
-		activeTrajectory = traj;
+		nextTrajectory = traj;
 	}
 	
 	public void setActive(){
@@ -204,7 +205,9 @@ public enum TorMotionProfile
 						headingWaypoint += lookUpHeading(-1);
 					}	
 					System.out.println("IS ON TARGETTTTTTTTTTTTTTTTTTTTTTTT");
-					stationaryTraj.execute();
+					activeTrajectory = nextTrajectory;
+					nextTrajectory = stationaryTraj;
+//					stationaryTraj.execute();
 //					joystickTraj.execute();
 				}
 			}

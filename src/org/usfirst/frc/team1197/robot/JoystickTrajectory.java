@@ -81,7 +81,12 @@ public class JoystickTrajectory extends TorTrajectory{
 	}
 	
 	public void updateDt(double dt){
-		this.dt = dt;
+		if(dt == 0.0){
+			dt = 0.005;
+		}
+		else{
+			this.dt = dt;
+		}
 	}
 	
 	private double sign(double x){

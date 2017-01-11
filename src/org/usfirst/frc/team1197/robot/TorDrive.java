@@ -28,14 +28,14 @@ public class TorDrive
 	private double maxThrottle;
 	private double approximateSensorSpeed;
 
-	private static TorTrajectory linearTrajectory;
-	private static TorTrajectory pivotTrajectory;
+	private static TorTrajectory forwardTrajectory;
+	private static TorTrajectory rightTrajectory;
+	private static TorTrajectory backwardTrajectory;
+	private static TorTrajectory leftTrajectory;
 	private static StationaryTrajectory stationaryTraj;
 	
 	private boolean buttonYlast;
 	private boolean buttonBlast;
-	
-	private boolean executeOnce = true;
 	
 	class PeriodicRunnable implements java.lang.Runnable {
 		public void run() {
@@ -47,8 +47,10 @@ public class TorDrive
 	public TorDrive(Joystick stick, Solenoid shift, double approximateSensorSpeed)
 	{
 		joystickProfile = new TorJoystickProfiles();
-		linearTrajectory = new LinearTrajectory(1.0);
-		pivotTrajectory = new PivotTrajectory(180);
+		forwardTrajectory = new LinearTrajectory(1.86);
+		backwardTrajectory = new LinearTrajectory(-2.0);
+		rightTrajectory = new PivotTrajectory(180);
+		leftTrajectory = new PivotTrajectory(-90);
 		stationaryTraj = new StationaryTrajectory();
 		
 		maxThrottle = (5.0/6.0) * (joystickProfile.getMinTurnRadius() / (joystickProfile.getMinTurnRadius() + halfTrackWidth));
@@ -197,46 +199,16 @@ public class TorDrive
 	
 	public void buttonDrive(boolean buttonA, boolean buttonB, boolean buttonX, boolean buttonY, double rightTrigger){
 		if(buttonB && !buttonBlast){
-			pivotTrajectory.execute();
+			rightTrajectory.execute();
 		}
 		else if(buttonX){
-//			linearTrajectory.execute();
+			leftTrajectory.execute();
 		}
 		else if(buttonY && !buttonYlast){
-//			teststates = TEST.IDLE;
-//			while(teststates != TEST.NULL){
-//				switch(teststates){
-//				case NULL:
-//					break;
-//				case IDLE:
-//					teststates = TEST.POS1;
-//					break;
-//				case POS1:
-//					if(executeOnce){
-//						linearTrajectory.execute();
-//						executeOnce = false;
-//					}
-//					if(TorMotionProfile.INSTANCE.dispOnTarget() && TorMotionProfile.INSTANCE.lookUpIsLast()){
-//						executeOnce = true;
-//						teststates = TEST.POS2;
-//					}
-//					break;
-//				case POS2:
-//					if(executeOnce){
-//						pivotTrajectory.execute();
-//						executeOnce = false;
-//					}
-//					if(TorMotionProfile.INSTANCE.headOnTarget() && TorMotionProfile.INSTANCE.lookUpIsLast()){
-//						executeOnce = true;
-//						teststates = TEST.NULL;
-//					}
-//					break;
-//				}
-//			}
-			linearTrajectory.execute();
+			forwardTrajectory.execute();
 		}
 		else if(buttonA){
-
+			backwardTrajectory.execute();
 		}
 		else{
 			
