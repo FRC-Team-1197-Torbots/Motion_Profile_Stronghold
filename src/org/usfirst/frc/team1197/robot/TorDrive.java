@@ -47,9 +47,9 @@ public class TorDrive
 	public TorDrive(Joystick stick, Solenoid shift, double approximateSensorSpeed)
 	{
 		joystickProfile = new TorJoystickProfiles();
-		forwardTrajectory = new LinearTrajectory(1.86);
-		backwardTrajectory = new LinearTrajectory(-2.0);
-		rightTrajectory = new PivotTrajectory(180);
+		forwardTrajectory = new LinearTrajectory(2.0);
+		backwardTrajectory = new LinearTrajectory(-1.0);
+		rightTrajectory = new PivotTrajectory(90);
 		leftTrajectory = new PivotTrajectory(-90);
 		stationaryTraj = new StationaryTrajectory();
 		
@@ -65,8 +65,8 @@ public class TorDrive
 			boolean buttonA, boolean buttonB, boolean buttonX, boolean buttonY, boolean rightBumper){
 		//Only switch to carDrive in high gear
 		if(isHighGear){
-//			carDrive(throttleAxis, carSteerAxis);
-			buttonDrive(buttonA, buttonB, buttonX, buttonY, rightTrigger);
+			carDrive(throttleAxis, carSteerAxis);
+//			buttonDrive(buttonA, buttonB, buttonX, buttonY, rightTrigger);
 			
 			//When you hold down the shiftButton (left bumper), then shift to low gear.
 			if(shiftButton){
@@ -193,6 +193,7 @@ public class TorDrive
 
 		//Setting the rightMotorSpeed and the leftMotorSpeed so that it actually drives.
 //		TorCAN.INSTANCE.SetDrive(rightMotorSpeed, -leftMotorSpeed);
+		SmartDashboard.putNumber("targetSpeed", targetSpeed);
 		TorMotionProfile.INSTANCE.joystickTraj.setTargets(targetSpeed, targetOmega);
 		
 	}

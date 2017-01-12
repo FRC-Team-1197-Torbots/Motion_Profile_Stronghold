@@ -8,7 +8,7 @@ public class JoystickTrajectory extends TorTrajectory{
 	private double tgt_omg;
 	
 	public JoystickTrajectory(){
-//		super(0.0);
+		super(0.0);
 		linearMotion = new Motion(0.0, 0.0, 0.0);
 		rotationalMotion = new Motion(0.0, 0.0, 0.0);
 	}
@@ -81,19 +81,23 @@ public class JoystickTrajectory extends TorTrajectory{
 	}
 	
 	public void updateDt(double dt){
-		if(dt == 0.0){
+//		if(dt == 0.0){
 			dt = 0.005;
-		}
-		else{
-			this.dt = dt;
-		}
+//		}
+//		else{
+//			this.dt = dt;
+//		}
 	}
 	
 	private double sign(double x){
-		if (x > 0)
+		if(x > 0){
 			return 1.0;
-		else if (x < 0)
+		}
+		else if(x < 0){
 			return -1.0;
-		else return 0.0;
+		}
+		else{ 
+			return 0.0;
+		}
 	}
 }
