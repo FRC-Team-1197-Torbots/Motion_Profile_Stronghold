@@ -144,12 +144,13 @@ public enum TorMotionProfile
 		if(isActive()){
 			currentTime = System.currentTimeMillis();
 			dt = (currentTime - lastTime) * 0.001;
+//			lastTime = currentTime; //TODO: uncomment and re-tune PID, if necessary
 			currentTime = (currentTime - (currentTime % ((long)(getTimeInterval() * 1000))));
 			
 			displacementPID.updateDt(dt);
 			headingPID.updateDt(dt);
 			
-			joystickTraj.updateDt(dt);
+			//joystickTraj.updateDt(dt); //TODO: uncomment and see if this makes things better/worse.
 			joystickTraj.updateVelocity();
 			joystickTraj.updateOmega();
 			

@@ -6,6 +6,7 @@ public class JoystickTrajectory extends TorTrajectory{
 	private Motion rotationalMotion;
 	private double tgt_vel;
 	private double tgt_omg;
+	private double tgt_acc;
 	
 	public JoystickTrajectory(){
 		super(0.0);
@@ -54,39 +55,32 @@ public class JoystickTrajectory extends TorTrajectory{
 		TorMotionProfile.INSTANCE.loadTrajectory(this);
 	}
 	
-	public void update(double tgt_vel, Motion m){
+	public void update(double tgt_vel, Motion m, double max_acc){
 		// Target (requested) acceleration:
-		double tgt_acc = (tgt_vel - m.vel) / dt;
-		double a_sign = sign(tgt_acc);
-		tgt_acc = a_sign*Math.min(Math.abs(tgt_acc), max_acc);
-		// Target (requested) jerk:
-		double tgt_jrk = (tgt_acc - m.acc) / dt;
-		double j_sign = sign(tgt_jrk);
-		// Actual jerk, based on constraints:
-		double jerk = j_sign*Math.min(Math.abs(tgt_jrk), max_jerk);
+		tgt_acc = (tgt_vel - m.vel) / dt;
 		// Actual acceleration:
-		m.acc = m.acc + jerk*dt;
+		m.acc = sign(tgt_acc)*Math.min(Math.abs(tgt_acc), max_acc);
 		// Velocity:
-		m.vel = m.vel + m.acc*dt + 0.5*jerk*dt*dt;
+		m.vel = m.vel + m.acc*dt;
 		// Position:
-		m.pos = m.pos + m.vel*dt + 0.5*m.acc*dt*dt + 0.1666667*jerk*dt*dt*dt;	
+		m.pos = m.pos + m.vel*dt + 0.5*m.acc*dt*dt;	
 	}
 	
 	public void updateVelocity(){
-		update(tgt_vel, linearMotion);
+		update(tgt_vel, linearMotion, max_acc);
 	}
 	
 	public void updateOmega(){
-		update(tgt_omg, rotationalMotion);
+		update(tgt_omg, rotationalMotion, max_alf);
 	}
 	
 	public void updateDt(double dt){
-//		if(dt == 0.0){
-			dt = 0.005;
-//		}
-//		else{
-//			this.dt = dt;
-//		}
+		if(dt == 0.0){
+			this.dt = 0.005;
+		}
+		else{
+			this.dt = dt;
+		}
 	}
 	
 	private double sign(double x){
