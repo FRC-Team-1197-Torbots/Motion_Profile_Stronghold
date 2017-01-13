@@ -18,18 +18,20 @@ public enum TorCAN
 	
 	private AHRS gyro;
 	
-	private double encoderTicksPerMeter = 8814.0;
-	private double approximateSensorSpeed = 4550.0;
-	private double quadEncNativeUnits = 512.0;
+	private double encoderTicksPerMeter = 8814.0; // (units: ticks per meter)
+	private double approximateSensorSpeed = 4550.0; // measured maximum (units: RPM)
+	private double quadEncNativeUnits = 512.0; // (units: ticks per revolution)
 	private double kF = (1023.0) / ((approximateSensorSpeed * quadEncNativeUnits) / (600.0));
 	private double kP = 1.5; //1.5 change it back down to 1.0 if you get the jitters
 	private double kI = 0.0; //0.0
 	private double kD = 50.0; //50.0
 	
-	private double trackWidth = 0.5525; //meters, in inches 21.75
-	private double halfTrackWidth = trackWidth / 2.0;
+	// absoluteMaxSpeed is in meters per second. Right now it comes out to about 4.405 m/s
+	private double absoluteMaxSpeed = (approximateSensorSpeed*quadEncNativeUnits)/(60*encoderTicksPerMeter);
+	private double trackWidth = 0.5525; // (units: meters (21.75 in inches))
+	private double halfTrackWidth = trackWidth / 2.0; // (units: meters)
 	
-	private double backlash = 0.015;
+	private double backlash = 0.015; // (units: meters)
 	
 	private TorCAN(){
 		
@@ -108,17 +110,17 @@ public enum TorCAN
 	}
 	
 	public double getDisplacement(){
-		return -(m_Rtalon1.getPosition() + m_Ltalon1.getPosition()) * 0.5 / encoderTicksPerMeter;
+		return -(m_Rtalon1.getPosition() + m_Ltalon1.getPosition()) * 0.5 / encoderTicksPerMeter; // (units: meters)
 	}
 	public double getVelocity(){
-		return -(m_Rtalon1.getSpeed() + m_Ltalon1.getSpeed()) * 0.5 * 10 / encoderTicksPerMeter;
+		return -(m_Rtalon1.getSpeed() + m_Ltalon1.getSpeed()) * 0.5 * 10 / encoderTicksPerMeter; // (units: meters)
 	}
 	
 	public double getHeading(){
-		return (gyro.getAngle() * (Math.PI / 180));
+		return (gyro.getAngle() * (Math.PI / 180)); // (units: radians)
 	}
 	public double getOmega(){
-		return (gyro.getRate());
+		return (gyro.getRate()); // (units: radians (contrary to navX documentation))
 	}
 	
 	//1.555 is the conversion factor that we found experimentally.
@@ -137,6 +139,10 @@ public enum TorCAN
 	}
 	
 	public double getBacklash(){
-		return backlash;
+		return backlash; // (units: meters)
+	}
+	
+	public double absoluteMaxSpeed(){
+		return absoluteMaxSpeed; // (units: meters per second)
 	}
 }

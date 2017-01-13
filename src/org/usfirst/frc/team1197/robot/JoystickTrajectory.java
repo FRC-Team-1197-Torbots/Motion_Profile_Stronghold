@@ -59,7 +59,7 @@ public class JoystickTrajectory extends TorTrajectory{
 		// Target (requested) acceleration:
 		tgt_acc = (tgt_vel - m.vel) / dt;
 		// Actual acceleration:
-		m.acc = sign(tgt_acc)*Math.min(Math.abs(tgt_acc), max_acc);
+		m.acc = TorMath.sign(tgt_acc)*Math.min(Math.abs(tgt_acc), max_acc);
 		// Velocity:
 		m.vel = m.vel + m.acc*dt;
 		// Position:
@@ -80,18 +80,6 @@ public class JoystickTrajectory extends TorTrajectory{
 		}
 		else{
 			this.dt = dt;
-		}
-	}
-	
-	private double sign(double x){
-		if(x > 0){
-			return 1.0;
-		}
-		else if(x < 0){
-			return -1.0;
-		}
-		else{ 
-			return 0.0;
 		}
 	}
 }
