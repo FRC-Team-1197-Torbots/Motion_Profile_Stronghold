@@ -24,9 +24,9 @@ public enum TorMotionProfile
 	
 	private double kPv = 0.0; //0.0
 	private double kA = 0.0; //0.0
-	private double kP = 3.0;  //1.0
+	private double kP = 3.0;  //3.0
 	private double kI = 0.0;  //0.0
-	private double kD = 0.5;  //0.4
+	private double kD = 0.5;  //0.5
 	
 	private double kpv = 0.5; //0.5
 	private double ka = 0.0; //0.0
@@ -42,7 +42,7 @@ public enum TorMotionProfile
 	private long currentTime;
 	private long lastTime;
 	
-//	public JoystickTrajectory joystickTraj;
+	public JoystickTrajectory joystickTraj;
 	private StationaryTrajectory stationaryTraj;
 	private TorDerivative displacementDerivative;
 	private TorDerivative headingDerivative;
@@ -57,15 +57,15 @@ public enum TorMotionProfile
 	private boolean usingWaypoint = true;
 	
 	private TorMotionProfile(){
-//		joystickTraj = new JoystickTrajectory();
+		joystickTraj = new JoystickTrajectory();
 		stationaryTraj = new StationaryTrajectory();
 		displacementDerivative = new TorDerivative(getTimeInterval());
 		headingDerivative = new TorDerivative(getTimeInterval());
 		displacementPID = new TorPID(dt);
 		headingPID = new TorPID(dt);
 		
-		activeTrajectory = stationaryTraj;
-		nextTrajectory = stationaryTraj;
+		activeTrajectory = joystickTraj;
+		nextTrajectory = joystickTraj;
 		
 		displacementPID.setLimitMode(sensorLimitMode.Default);
 		displacementPID.setNoiseMode(sensorNoiseMode.Noisy);
@@ -147,8 +147,8 @@ public enum TorMotionProfile
 	
 	public void run(){		
 		if(isActive()){
-			System.out.println(activeTrajectory.toString());
-			System.out.println(nextTrajectory.toString());
+//			System.out.println(activeTrajectory.toString());
+//			System.out.println(nextTrajectory.toString());
 			
 			currentTime = System.currentTimeMillis();
 			dt = (currentTime - lastTime) * 0.001;
@@ -159,8 +159,8 @@ public enum TorMotionProfile
 			headingPID.updateDt(dt);
 			
 //			joystickTraj.updateDt(dt); //TODO (2): uncomment and see if this makes things better/worse after doing (1).
-//			joystickTraj.updateVelocity();
-//			joystickTraj.updateOmega();
+			joystickTraj.updateVelocity();
+			joystickTraj.updateOmega();
 			
 			//Displacement
 			displacementPID.updatePosition(TorCAN.INSTANCE.getDisplacement());
@@ -195,32 +195,29 @@ public enum TorMotionProfile
 			headingPID.updateVelocityTarget(targetOmega);
 			headingPID.updateAccelerationTarget(targetAlpha);	
 
-//			SmartDashboard.putNumber("targetOmega", targetOmega);
-//			SmartDashboard.putNumber("targetAlpha", targetAlpha);
-//			SmartDashboard.putNumber("targetHeading", targetHeading);
-//			SmartDashboard.putNumber("currentOmega", headingPID.velocity());
-//			SmartDashboard.putNumber("currentAlpha", headingPID.acceleration());
-//			SmartDashboard.putNumber("currentHeading", headingPID.position());
-//			SmartDashboard.putNumber("dHeadErrordt", headingWaypoint);
-//			SmartDashboard.putNumber("headingError", headingPID.error());
+			SmartDashboard.putNumber("targetOmega", targetOmega);
+			SmartDashboard.putNumber("targetAlpha", targetAlpha);
+			SmartDashboard.putNumber("targetHeading", targetHeading);
+			SmartDashboard.putNumber("currentOmega", headingPID.velocity());
+			SmartDashboard.putNumber("currentAlpha", headingPID.acceleration());
+			SmartDashboard.putNumber("currentHeading", headingPID.position());
+			SmartDashboard.putNumber("dHeadErrordt", headingWaypoint);
+			SmartDashboard.putNumber("headingError", headingPID.error());
 
 			displacementPID.update();
 			headingPID.update();
 			TorCAN.INSTANCE.setTargets(displacementPID.output(), headingPID.output());
 //			TorCAN.INSTANCE.setTargets(0.0, 0.0);
 			if(lookUpIsLast(currentTime) && displacementPID.isOnTarget() && headingPID.isOnTarget()){
-//				if(displacementPID.isOnTarget() && headingPID.isOnTarget()){
-				if(!(activeTrajectory == stationaryTraj && nextTrajectory == stationaryTraj)){
+				if(!(activeTrajectory == joystickTraj && nextTrajectory == joystickTraj)){
 					if(usingWaypoint){
 						displacementWaypoint += lookUpDisplacement(-1);
 						headingWaypoint += lookUpHeading(-1);
 					}
 					System.out.println("IS ON TARGETTTTTTTTTTTTTTTTTTTTTTTT");
 					activeTrajectory = nextTrajectory;
-					nextTrajectory = stationaryTraj;
-//					nextTrajectory = joystickTraj;
-//					stationaryTraj.execute();
-//					joystickTraj.execute();
+//					nextTrajectory = stationaryTraj;
+					nextTrajectory = joystickTraj;
 				}
 			}
 		}

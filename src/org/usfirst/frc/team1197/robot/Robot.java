@@ -19,8 +19,8 @@ public class Robot extends SampleRobot {
 		S1 = new Solenoid(0);		
 		compressor = new Compressor();
 		drive = new TorDrive(stick, S1, approximateSensorSpeed); 
-		CameraServer camera = CameraServer.getInstance();
-		camera.startAutomaticCapture("cam0", 0);
+//		CameraServer camera = CameraServer.getInstance();
+//		camera.startAutomaticCapture("cam0", 0);
 	}
 
 	public void autonomous() {
