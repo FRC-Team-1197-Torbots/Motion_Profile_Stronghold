@@ -42,7 +42,7 @@ public enum TorMotionProfile
 	private long currentTime;
 	private long lastTime;
 	
-	public JoystickTrajectory joystickTraj;
+//	public JoystickTrajectory joystickTraj;
 	private StationaryTrajectory stationaryTraj;
 	private TorDerivative displacementDerivative;
 	private TorDerivative headingDerivative;
@@ -57,7 +57,7 @@ public enum TorMotionProfile
 	private boolean usingWaypoint = true;
 	
 	private TorMotionProfile(){
-		joystickTraj = new JoystickTrajectory();
+//		joystickTraj = new JoystickTrajectory();
 		stationaryTraj = new StationaryTrajectory();
 		displacementDerivative = new TorDerivative(getTimeInterval());
 		headingDerivative = new TorDerivative(getTimeInterval());
@@ -151,12 +151,12 @@ public enum TorMotionProfile
 			headingPID.updateDt(dt);
 			
 //			joystickTraj.updateDt(dt); //TODO (2): uncomment and see if this makes things better/worse after doing (1).
-			joystickTraj.updateVelocity();
-			joystickTraj.updateOmega();
+//			joystickTraj.updateVelocity();
+//			joystickTraj.updateOmega();
 			
 			//Displacement
 			displacementPID.updatePosition(TorCAN.INSTANCE.getDisplacement());
-			displacementPID.updateVelocity(TorCAN.INSTANCE.getVelocity());
+//			displacementPID.updateVelocity(TorCAN.INSTANCE.getVelocity());
 
 			targetDisplacement = lookUpDisplacement(currentTime) + displacementWaypoint;
 			targetVelocity = lookUpVelocity(currentTime);
@@ -187,19 +187,19 @@ public enum TorMotionProfile
 			headingPID.updateVelocityTarget(targetOmega);
 			headingPID.updateAccelerationTarget(targetAlpha);	
 
-//			SmartDashboard.putNumber("targetOmega", targetOmega);
-//			SmartDashboard.putNumber("targetAlpha", targetAlpha);
-//			SmartDashboard.putNumber("targetHeading", targetHeading);
-//			SmartDashboard.putNumber("currentOmega", headingPID.velocity());
-//			SmartDashboard.putNumber("currentAlpha", headingPID.acceleration());
-//			SmartDashboard.putNumber("currentHeading", headingPID.position());
-//			SmartDashboard.putNumber("dHeadErrordt", headingWaypoint);
-//			SmartDashboard.putNumber("headingError", headingPID.error());
+			SmartDashboard.putNumber("targetOmega", targetOmega);
+			SmartDashboard.putNumber("targetAlpha", targetAlpha);
+			SmartDashboard.putNumber("targetHeading", targetHeading);
+			SmartDashboard.putNumber("currentOmega", headingPID.velocity());
+			SmartDashboard.putNumber("currentAlpha", headingPID.acceleration());
+			SmartDashboard.putNumber("currentHeading", headingPID.position());
+			SmartDashboard.putNumber("dHeadErrordt", headingWaypoint);
+			SmartDashboard.putNumber("headingError", headingPID.error());
 
 			displacementPID.update();
 			headingPID.update();
-//			TorCAN.INSTANCE.setTargets(displacementPID.output(), headingPID.output());
-			TorCAN.INSTANCE.setTargets(0.0, 0.0);
+			TorCAN.INSTANCE.setTargets(displacementPID.output(), headingPID.output());
+//			TorCAN.INSTANCE.setTargets(0.0, 0.0);
 			if(lookUpIsLast(currentTime)){
 				if(displacementPID.isOnTarget() && headingPID.isOnTarget()){
 					if (usingWaypoint){
@@ -208,8 +208,8 @@ public enum TorMotionProfile
 					}	
 					System.out.println("IS ON TARGETTTTTTTTTTTTTTTTTTTTTTTT");
 					activeTrajectory = nextTrajectory;
-//					nextTrajectory = stationaryTraj;
-					nextTrajectory = joystickTraj;
+					nextTrajectory = stationaryTraj;
+//					nextTrajectory = joystickTraj;
 //					stationaryTraj.execute();
 //					joystickTraj.execute();
 				}

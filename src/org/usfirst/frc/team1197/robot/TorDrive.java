@@ -47,7 +47,7 @@ public class TorDrive
 	public TorDrive(Joystick stick, Solenoid shift, double approximateSensorSpeed)
 	{
 		joystickProfile = new TorJoystickProfiles();
-		forwardTrajectory = new LinearTrajectory(2.0);
+		forwardTrajectory = new LinearTrajectory(1.0);
 		backwardTrajectory = new LinearTrajectory(-1.0);
 		rightTrajectory = new PivotTrajectory(90);
 		leftTrajectory = new PivotTrajectory(-90);
@@ -65,8 +65,8 @@ public class TorDrive
 			boolean buttonA, boolean buttonB, boolean buttonX, boolean buttonY, boolean rightBumper){
 		//Only switch to carDrive in high gear
 		if(isHighGear){
-			ackermanDrive(throttleAxis, carSteerAxis);
-//			buttonDrive(buttonA, buttonB, buttonX, buttonY, rightTrigger);
+//			ackermanDrive(throttleAxis, carSteerAxis);
+			buttonDrive(buttonA, buttonB, buttonX, buttonY, rightTrigger);
 			
 			//When you hold down the shiftButton (left bumper), then shift to low gear.
 			if(shiftButton){
@@ -93,7 +93,7 @@ public class TorDrive
 			TorCAN.INSTANCE.chooseVelocityControl();
 			isHighGear = true;
 			stationaryTraj.execute();
-			TorMotionProfile.INSTANCE.joystickTraj.execute(0.0, 0.0, 0.0, 0.0);
+//			TorMotionProfile.INSTANCE.joystickTraj.execute(0.0, 0.0, 0.0, 0.0);
 			TorMotionProfile.INSTANCE.setActive();
 		}
 	}
@@ -213,18 +213,18 @@ public class TorDrive
 		buttonYlast = buttonY;
 	}
 	
-public void ackermanDrive(double throttleAxis, double carSteeringAxis){
+	public void ackermanDrive(double throttleAxis, double carSteeringAxis){
 		//Flipping the sign so it drives forward when you move the analog stick up and vice versa
 		throttleAxis = -throttleAxis;
 		carSteeringAxis = -carSteeringAxis;
-		
+
 		targetSpeed = joystickProfile.findSpeedSimple(throttleAxis) * TorCAN.INSTANCE.absoluteMaxSpeed();
 		targetSpeed *= maxThrottle;
-		
+
 		/* The centerRadius is the value we gain from findRadiusExponential method in the joystickProfile class.
 		   The TorMath.sign(throttleAxis) makes steering work the same when the robot drives backwards. */
 		centerRadius = TorMath.sign(throttleAxis) * joystickProfile.findRadiusExponential(carSteeringAxis);
-		
+
 		// If the centerRadius is greater than the maxTurnRadius or if it is 0, then drive straight:
 		if (Math.abs(centerRadius) > joystickProfile.getMaxTurnRadius() || Math.abs(centerRadius) == 0.0)
 		{
@@ -236,9 +236,9 @@ public void ackermanDrive(double throttleAxis, double carSteeringAxis){
 		}
 
 		// Setting the joystick trajectory targets so that it actually drives:
-		TorMotionProfile.INSTANCE.joystickTraj.setTargets(targetSpeed, targetOmega);
+//		TorMotionProfile.INSTANCE.joystickTraj.setTargets(targetSpeed, targetOmega);
 		SmartDashboard.putNumber("targetSpeed", targetSpeed);
-		
+
 	}
 
 }
