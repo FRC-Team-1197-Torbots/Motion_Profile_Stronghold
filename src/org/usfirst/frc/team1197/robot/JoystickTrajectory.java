@@ -35,7 +35,7 @@ public class JoystickTrajectory extends TorTrajectory{
 	}
 	
 	public boolean lookUpIsLast(long t){
-		return false;
+		return true;
 	}
 	
 	public void setTargets(double v, double w){

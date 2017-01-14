@@ -24,9 +24,9 @@ public enum TorMotionProfile
 	
 	private double kPv = 0.0; //0.0
 	private double kA = 0.0; //0.0
-	private double kP = 1.0;  //1.0
+	private double kP = 3.0;  //1.0
 	private double kI = 0.0;  //0.0
-	private double kD = 0.4;  //0.4
+	private double kD = 0.5;  //0.4
 	
 	private double kpv = 0.5; //0.5
 	private double ka = 0.0; //0.0
@@ -64,11 +64,14 @@ public enum TorMotionProfile
 		displacementPID = new TorPID(dt);
 		headingPID = new TorPID(dt);
 		
+		activeTrajectory = stationaryTraj;
+		nextTrajectory = stationaryTraj;
+		
 		displacementPID.setLimitMode(sensorLimitMode.Default);
 		displacementPID.setNoiseMode(sensorNoiseMode.Noisy);
 		displacementPID.setBacklash(0.0);
-		displacementPID.setPositionTolerance(0.015);
-		displacementPID.setVelocityTolerance(0.015);
+		displacementPID.setPositionTolerance(0.02);
+		displacementPID.setVelocityTolerance(0.02);
 		displacementPID.setMinimumOutput(minLineOutput);
 		displacementPID.setkP(kP);
 		displacementPID.setkI(kI);
@@ -90,27 +93,27 @@ public enum TorMotionProfile
 	}
 	
 	public double lookUpDisplacement(long t){
-		return nextTrajectory.lookUpDisplacement(t);
+		return activeTrajectory.lookUpDisplacement(t);
 	}
 	public double lookUpVelocity(long t){
-		return nextTrajectory.lookUpVelocity(t);
+		return activeTrajectory.lookUpVelocity(t);
 	}
 	public double lookUpAcceleration(long t){
-		return nextTrajectory.lookUpAcceleration(t);
+		return activeTrajectory.lookUpAcceleration(t);
 	}
 	
 	public double lookUpHeading(long t){
-		return nextTrajectory.lookUpHeading(t);
+		return activeTrajectory.lookUpHeading(t);
 	}
 	public double lookUpOmega(long t){
-		return nextTrajectory.lookUpOmega(t);
+		return activeTrajectory.lookUpOmega(t);
 	}
 	public double lookUpAlpha(long t){
-		return nextTrajectory.lookUpAlpha(t);
+		return activeTrajectory.lookUpAlpha(t);
 	}
 	
 	public boolean lookUpIsLast(long t){
-		return nextTrajectory.lookUpIsLast(t);
+		return activeTrajectory.lookUpIsLast(t);
 	}
 	
 	public void loadTrajectory(TorTrajectory traj){
@@ -123,6 +126,8 @@ public enum TorMotionProfile
 	}
 	
 	public void setActive(){
+		activeTrajectory = stationaryTraj;
+		nextTrajectory = stationaryTraj;
 		resetWaypoints();
 		TorCAN.INSTANCE.resetEncoder();
 		TorCAN.INSTANCE.resetHeading();
@@ -142,6 +147,9 @@ public enum TorMotionProfile
 	
 	public void run(){		
 		if(isActive()){
+			System.out.println(activeTrajectory.toString());
+			System.out.println(nextTrajectory.toString());
+			
 			currentTime = System.currentTimeMillis();
 			dt = (currentTime - lastTime) * 0.001;
 //			lastTime = currentTime; //TODO (1): uncomment and re-tune PID, if necessary
@@ -156,7 +164,7 @@ public enum TorMotionProfile
 			
 			//Displacement
 			displacementPID.updatePosition(TorCAN.INSTANCE.getDisplacement());
-//			displacementPID.updateVelocity(TorCAN.INSTANCE.getVelocity());
+			displacementPID.updateVelocity(TorCAN.INSTANCE.getVelocity());
 
 			targetDisplacement = lookUpDisplacement(currentTime) + displacementWaypoint;
 			targetVelocity = lookUpVelocity(currentTime);
@@ -187,25 +195,26 @@ public enum TorMotionProfile
 			headingPID.updateVelocityTarget(targetOmega);
 			headingPID.updateAccelerationTarget(targetAlpha);	
 
-			SmartDashboard.putNumber("targetOmega", targetOmega);
-			SmartDashboard.putNumber("targetAlpha", targetAlpha);
-			SmartDashboard.putNumber("targetHeading", targetHeading);
-			SmartDashboard.putNumber("currentOmega", headingPID.velocity());
-			SmartDashboard.putNumber("currentAlpha", headingPID.acceleration());
-			SmartDashboard.putNumber("currentHeading", headingPID.position());
-			SmartDashboard.putNumber("dHeadErrordt", headingWaypoint);
-			SmartDashboard.putNumber("headingError", headingPID.error());
+//			SmartDashboard.putNumber("targetOmega", targetOmega);
+//			SmartDashboard.putNumber("targetAlpha", targetAlpha);
+//			SmartDashboard.putNumber("targetHeading", targetHeading);
+//			SmartDashboard.putNumber("currentOmega", headingPID.velocity());
+//			SmartDashboard.putNumber("currentAlpha", headingPID.acceleration());
+//			SmartDashboard.putNumber("currentHeading", headingPID.position());
+//			SmartDashboard.putNumber("dHeadErrordt", headingWaypoint);
+//			SmartDashboard.putNumber("headingError", headingPID.error());
 
 			displacementPID.update();
 			headingPID.update();
 			TorCAN.INSTANCE.setTargets(displacementPID.output(), headingPID.output());
 //			TorCAN.INSTANCE.setTargets(0.0, 0.0);
-			if(lookUpIsLast(currentTime)){
-				if(displacementPID.isOnTarget() && headingPID.isOnTarget()){
-					if (usingWaypoint){
+			if(lookUpIsLast(currentTime) && displacementPID.isOnTarget() && headingPID.isOnTarget()){
+//				if(displacementPID.isOnTarget() && headingPID.isOnTarget()){
+				if(!(activeTrajectory == stationaryTraj && nextTrajectory == stationaryTraj)){
+					if(usingWaypoint){
 						displacementWaypoint += lookUpDisplacement(-1);
 						headingWaypoint += lookUpHeading(-1);
-					}	
+					}
 					System.out.println("IS ON TARGETTTTTTTTTTTTTTTTTTTTTTTT");
 					activeTrajectory = nextTrajectory;
 					nextTrajectory = stationaryTraj;

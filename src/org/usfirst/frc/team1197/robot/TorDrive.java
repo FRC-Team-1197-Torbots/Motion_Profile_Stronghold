@@ -36,6 +36,8 @@ public class TorDrive
 	
 	private boolean buttonYlast;
 	private boolean buttonBlast;
+	private boolean buttonXlast;
+	private boolean buttonAlast;
 	
 	class PeriodicRunnable implements java.lang.Runnable {
 		public void run() {
@@ -197,13 +199,13 @@ public class TorDrive
 		if(buttonB && !buttonBlast){
 			rightTrajectory.execute();
 		}
-		else if(buttonX){
+		else if(buttonX && !buttonXlast){
 			leftTrajectory.execute();
 		}
 		else if(buttonY && !buttonYlast){
 			forwardTrajectory.execute();
 		}
-		else if(buttonA){
+		else if(buttonA && !buttonAlast){
 			backwardTrajectory.execute();
 		}
 		else{
@@ -211,6 +213,8 @@ public class TorDrive
 		}
 		buttonBlast = buttonB;
 		buttonYlast = buttonY;
+		buttonXlast = buttonX;
+		buttonAlast = buttonA;
 	}
 	
 	public void ackermanDrive(double throttleAxis, double carSteeringAxis){
@@ -218,7 +222,8 @@ public class TorDrive
 		throttleAxis = -throttleAxis;
 		carSteeringAxis = -carSteeringAxis;
 
-		targetSpeed = joystickProfile.findSpeedSimple(throttleAxis) * TorCAN.INSTANCE.absoluteMaxSpeed();
+//		targetSpeed = joystickProfile.findSpeedSimple(throttleAxis) * TorCAN.INSTANCE.absoluteMaxSpeed();
+		targetSpeed = joystickProfile.findSpeedSimple(throttleAxis) * 4.405;
 		targetSpeed *= maxThrottle;
 
 		/* The centerRadius is the value we gain from findRadiusExponential method in the joystickProfile class.

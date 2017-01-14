@@ -1,5 +1,6 @@
 package org.usfirst.frc.team1197.robot;
 
+import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.SampleRobot;
@@ -11,12 +12,15 @@ public class Robot extends SampleRobot {
 	private Joystick stick;
 	private TorDrive drive;
 	private double approximateSensorSpeed = 4550.0;
+	private CameraServer camera;
 
 	public Robot() {
 		stick = new Joystick(0);	
 		S1 = new Solenoid(0);		
 		compressor = new Compressor();
 		drive = new TorDrive(stick, S1, approximateSensorSpeed); 
+		CameraServer camera = CameraServer.getInstance();
+		camera.startAutomaticCapture("cam0", 0);
 	}
 
 	public void autonomous() {

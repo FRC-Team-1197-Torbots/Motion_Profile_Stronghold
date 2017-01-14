@@ -8,7 +8,7 @@ public class StationaryTrajectory extends TorTrajectory{
 	}
 	
 	public boolean lookUpIsLast(long t){
-		return false;
+		return true;
 	}
 	
 	public double lookUpDisplacement(long t){
