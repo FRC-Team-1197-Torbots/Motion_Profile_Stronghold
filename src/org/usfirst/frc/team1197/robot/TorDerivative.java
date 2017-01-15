@@ -10,6 +10,7 @@ package org.usfirst.frc.team1197.robot;
 
 public class TorDerivative {
 	// Arrays to keep track of variable history:
+	private double[] tData = new double[20];
 	private double[] yData = new double[20];
 	private double[] vData = new double[20];
 	
@@ -18,28 +19,30 @@ public class TorDerivative {
 	private double SSty;
 	private double SStv;
 
+	private double mean;
+	private double sum;
+	private double t;
+	private double interval;
 	private double dt;
+	private boolean dtIsUpdated;
 	private double tMean;
 	private double v0;
 	private double a0;
 	private double v;
 	
 	public TorDerivative(double dt){
-		this.dt = dt;
-		tMean = (yData.length-1) * dt * 0.5;
-		// Note the symmetry between this and the SStx() method:
-		SStt = 0;
-	    for(int i = 0;  i < yData.length; i++){
-			SStt += (i*dt - tMean)*(i*dt - tMean);
+		this.interval = dt;
+	    for(int i = tData.length-1;  i >= 0; i--){
+			tData[i] = i*dt;
 		}
 	}
 	
 	private double Mean(double[] data){
-		double sum = 0;
+		sum = 0;
 		for(int i=0; i < data.length; i++){
 			sum += data[i];
 		}
-		double mean = sum / data.length;
+		mean = sum / data.length;
 		return mean;
 	}
 	
@@ -53,15 +56,28 @@ public class TorDerivative {
 	}
 	
 	private double SStx(double[] data){
-		double mean  = Mean(data);
+		if(data != tData)
+			mean  = Mean(data);
+		else
+			mean = tMean;
 		double sum = 0.0;
 	    for(int i=0; i<data.length; i++){
-			sum += (i*dt - tMean)*(data[i] - mean);
+			sum += (tData[i] - tMean)*(data[i] - mean);
 		}
 	    return sum;
 	}
 	
 	public double estimate(double y){
+		t = tData[0];
+		if(dtIsUpdated){
+			t += dt;
+			dtIsUpdated = false;
+		}
+		else
+			t += interval;
+		Push(tData, t);
+		tMean = Mean(tData);
+		SStt = SStx(tData);
 		// This uses a least-squares formula to calculate best-fit slope.
 		// If you're not familiar with this technique, you can learn more
 		// here: http://mathworld.wolfram.com/LeastSquaresFitting.html
@@ -95,8 +111,14 @@ public class TorDerivative {
 		return v;
 	}
 	
+	public void updateDt(double dt){
+		this.dt = dt;
+		dtIsUpdated = true;
+	}
+	
 	public void reset(){
-		for(int i = 0; i < yData.length; i++){
+		for(int i = tData.length-1;  i >= 0; i--){
+			tData[i] = i*dt;
 			yData[i] = 0.0;
 			vData[i] = 0.0;
 		}

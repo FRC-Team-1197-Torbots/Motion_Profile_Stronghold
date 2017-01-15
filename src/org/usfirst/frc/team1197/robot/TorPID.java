@@ -56,6 +56,7 @@ public class TorPID {
 		if (!velIsUpdated){
 			// TODO: think about how to guarantee continuous velocity w/ coterminal sensor limits.
 			if(noiseMode == sensorNoiseMode.Noisy){
+				PositionDerivative.updateDt(dt);
 				vel = PositionDerivative.estimate(pos);
 				acc = PositionDerivative.second();
 			}
@@ -85,14 +86,16 @@ public class TorPID {
 		
 		// calculate error, integral, and derivative:
 		error = posTarget - pos;
-		if(limitMode == sensorLimitMode.Coterminal) {
+		if(limitMode == sensorLimitMode.Coterminal){
 			while(error < -Math.PI) error += 2*Math.PI;
 			while(error > Math.PI) error -= 2*Math.PI;
 		}
 		errorIntegral += error*dt;
 		// TODO: think about how to guarantee continuous velocity w/ coterminal sensor limits.
-		if(noiseMode == sensorNoiseMode.Noisy)
+		if(noiseMode == sensorNoiseMode.Noisy){
+			ErrorDerivative.updateDt(dt);
 			dErrordt = ErrorDerivative.estimate(error);
+		}
 		else
 			dErrordt = (error-last_error)/dt;
 		last_error = error;
