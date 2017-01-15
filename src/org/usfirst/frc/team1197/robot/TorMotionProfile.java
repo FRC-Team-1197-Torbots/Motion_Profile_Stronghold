@@ -12,6 +12,7 @@ public enum TorMotionProfile
 	private boolean isActive = false;
 	private TorTrajectory activeTrajectory = null;
 	private TorTrajectory nextTrajectory = null;
+	private TorTrajectory defaultTrajectory = null;
 	private final double timeInterval = 0.005;
 	
 	private double targetVelocity;
@@ -41,6 +42,8 @@ public enum TorMotionProfile
 	
 	private long currentTime;
 	private long lastTime;
+	private long lookupTime;
+	private long startTime;
 	
 	public JoystickTrajectory joystickTraj;
 	private StationaryTrajectory stationaryTraj;
@@ -64,8 +67,10 @@ public enum TorMotionProfile
 		displacementPID = new TorPID(dt);
 		headingPID = new TorPID(dt);
 		
-		activeTrajectory = joystickTraj;
-		nextTrajectory = joystickTraj;
+		defaultTrajectory = stationaryTraj;
+		
+		activeTrajectory = defaultTrajectory;
+		nextTrajectory = defaultTrajectory;
 		
 		displacementPID.setLimitMode(sensorLimitMode.Default);
 		displacementPID.setNoiseMode(sensorNoiseMode.Noisy);
@@ -93,27 +98,27 @@ public enum TorMotionProfile
 	}
 	
 	public double lookUpDisplacement(long t){
-		return activeTrajectory.lookUpDisplacement(t);
+		return activeTrajectory.lookUpDisplacement(lookupTime);
 	}
 	public double lookUpVelocity(long t){
-		return activeTrajectory.lookUpVelocity(t);
+		return activeTrajectory.lookUpVelocity(lookupTime);
 	}
 	public double lookUpAcceleration(long t){
-		return activeTrajectory.lookUpAcceleration(t);
+		return activeTrajectory.lookUpAcceleration(lookupTime);
 	}
 	
 	public double lookUpHeading(long t){
-		return activeTrajectory.lookUpHeading(t);
+		return activeTrajectory.lookUpHeading(lookupTime);
 	}
 	public double lookUpOmega(long t){
-		return activeTrajectory.lookUpOmega(t);
+		return activeTrajectory.lookUpOmega(lookupTime);
 	}
 	public double lookUpAlpha(long t){
-		return activeTrajectory.lookUpAlpha(t);
+		return activeTrajectory.lookUpAlpha(lookupTime);
 	}
 	
 	public boolean lookUpIsLast(long t){
-		return activeTrajectory.lookUpIsLast(t);
+		return activeTrajectory.lookUpIsLast(lookupTime);
 	}
 	
 	public void loadTrajectory(TorTrajectory traj){
@@ -126,8 +131,8 @@ public enum TorMotionProfile
 	}
 	
 	public void setActive(){
-		activeTrajectory = joystickTraj;
-		nextTrajectory = joystickTraj;
+		activeTrajectory = defaultTrajectory;
+		nextTrajectory = defaultTrajectory;
 		resetWaypoints();
 		TorCAN.INSTANCE.resetEncoder();
 		TorCAN.INSTANCE.resetHeading();
@@ -154,13 +159,14 @@ public enum TorMotionProfile
 			dt = (currentTime - lastTime) * 0.001;
 			lastTime = currentTime; //TODO (1): uncomment and re-tune PID, if necessary
 			currentTime = (currentTime - (currentTime % ((long)(getTimeInterval() * 1000))));
+			lookupTime = currentTime - startTime;
 			
 			displacementPID.updateDt(dt);
 			headingPID.updateDt(dt);
 			
 //			joystickTraj.updateDt(dt); //TODO (2): uncomment and see if this makes things better/worse after doing (1).
-			joystickTraj.updateVelocity();
-			joystickTraj.updateOmega();
+//			joystickTraj.updateVelocity();
+//			joystickTraj.updateOmega();
 			
 			//Displacement
 			displacementPID.updatePosition(TorCAN.INSTANCE.getDisplacement());
@@ -209,15 +215,15 @@ public enum TorMotionProfile
 			TorCAN.INSTANCE.setTargets(displacementPID.output(), headingPID.output());
 //			TorCAN.INSTANCE.setTargets(0.0, 0.0);
 			if(lookUpIsLast(currentTime) && displacementPID.isOnTarget() && headingPID.isOnTarget()){
-				if(!(activeTrajectory == joystickTraj && nextTrajectory == joystickTraj)){
+				startTime = currentTime;
+				if(!(activeTrajectory == defaultTrajectory && nextTrajectory == defaultTrajectory)){
 					if(usingWaypoint){
 						displacementWaypoint += lookUpDisplacement(-1);
 						headingWaypoint += lookUpHeading(-1);
 					}
 					System.out.println("IS ON TARGETTTTTTTTTTTTTTTTTTTTTTTT");
 					activeTrajectory = nextTrajectory;
-//					nextTrajectory = stationaryTraj;
-					nextTrajectory = joystickTraj;
+					nextTrajectory = defaultTrajectory;
 				}
 			}
 		}
@@ -227,8 +233,17 @@ public enum TorMotionProfile
 		}
 	}
 	
+	public void executeDefault(){
+		if(defaultTrajectory == stationaryTraj){
+			stationaryTraj.execute();
+		}
+		else{
+			joystickTraj.execute(0.0,0.0,0.0,0.0);
+		}
+	}
+	
 	public boolean isComplete(){
-		return (activeTrajectory == stationaryTraj);
+		return (activeTrajectory == defaultTrajectory);
 	}
 	
 	public boolean dispOnTarget(){
