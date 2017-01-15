@@ -220,8 +220,8 @@ public class TorDrive
 		throttleAxis = -throttleAxis;
 		carSteeringAxis = -carSteeringAxis;
 
-//		targetSpeed = joystickProfile.findSpeedSimple(throttleAxis) * TorCAN.INSTANCE.absoluteMaxSpeed();
-		targetSpeed = joystickProfile.findSpeedSimple(throttleAxis) * 4.405;
+		targetSpeed = joystickProfile.findSpeedSimple(throttleAxis) * TorCAN.INSTANCE.absoluteMaxSpeed();
+//		targetSpeed = joystickProfile.findSpeedSimple(throttleAxis) * 4.405;
 		targetSpeed *= maxThrottle;
 
 		/* The centerRadius is the value we gain from findRadiusExponential method in the joystickProfile class.
