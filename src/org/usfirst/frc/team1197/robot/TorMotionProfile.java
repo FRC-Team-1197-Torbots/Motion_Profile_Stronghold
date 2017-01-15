@@ -24,9 +24,9 @@ public enum TorMotionProfile
 	
 	private double kPv = 0.0; //0.0
 	private double kA = 0.0; //0.0
-	private double kP = 3.0;  //3.0
+	private double kP = 1.0;  //1.0
 	private double kI = 0.0;  //0.0
-	private double kD = 0.5;  //0.5
+	private double kD = 0.4;  //0.4
 	
 	private double kpv = 0.5; //0.5
 	private double ka = 0.0; //0.0
@@ -126,8 +126,8 @@ public enum TorMotionProfile
 	}
 	
 	public void setActive(){
-		activeTrajectory = stationaryTraj;
-		nextTrajectory = stationaryTraj;
+		activeTrajectory = joystickTraj;
+		nextTrajectory = joystickTraj;
 		resetWaypoints();
 		TorCAN.INSTANCE.resetEncoder();
 		TorCAN.INSTANCE.resetHeading();
@@ -152,7 +152,7 @@ public enum TorMotionProfile
 			
 			currentTime = System.currentTimeMillis();
 			dt = (currentTime - lastTime) * 0.001;
-//			lastTime = currentTime; //TODO (1): uncomment and re-tune PID, if necessary
+			lastTime = currentTime; //TODO (1): uncomment and re-tune PID, if necessary
 			currentTime = (currentTime - (currentTime % ((long)(getTimeInterval() * 1000))));
 			
 			displacementPID.updateDt(dt);

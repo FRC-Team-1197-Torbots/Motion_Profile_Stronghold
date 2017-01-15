@@ -67,8 +67,8 @@ public class TorDrive
 			boolean buttonA, boolean buttonB, boolean buttonX, boolean buttonY, boolean rightBumper){
 		//Only switch to carDrive in high gear
 		if(isHighGear){
-			ackermanDrive(throttleAxis, carSteerAxis);
-//			buttonDrive(buttonA, buttonB, buttonX, buttonY, rightTrigger);
+//			ackermanDrive(throttleAxis, carSteerAxis);
+			buttonDrive(buttonA, buttonB, buttonX, buttonY, rightTrigger);
 			
 			//When you hold down the shiftButton (left bumper), then shift to low gear.
 			if(shiftButton){
@@ -94,7 +94,7 @@ public class TorDrive
 			m_solenoidshift.set(false);
 			TorCAN.INSTANCE.chooseVelocityControl();
 			isHighGear = true;
-			stationaryTraj.execute();
+//			stationaryTraj.execute();
 			TorMotionProfile.INSTANCE.joystickTraj.execute(0.0, 0.0, 0.0, 0.0);
 			TorMotionProfile.INSTANCE.setActive();
 		}
@@ -106,7 +106,7 @@ public class TorDrive
 			m_solenoidshift.set(true);
 			TorCAN.INSTANCE.choosePercentVbus();
 			isHighGear = false;
-			stationaryTraj.execute();
+//			stationaryTraj.execute();
 			TorMotionProfile.INSTANCE.setInactive();
 		}
 	}
