@@ -25,9 +25,9 @@ public enum TorMotionProfile
 	
 	private double kPv = 0.0; //0.0
 	private double kA = 0.0; //0.0
-	private double kP = 1.0;  //1.0
+	private double kP = 2.5;  //1.0
 	private double kI = 0.0;  //0.0
-	private double kD = 0.4;  //0.4
+	private double kD = 0.3;  //0.4
 	
 	private double kpv = 0.5; //0.5
 	private double ka = 0.0; //0.0
@@ -75,8 +75,8 @@ public enum TorMotionProfile
 		displacementPID.setLimitMode(sensorLimitMode.Default);
 		displacementPID.setNoiseMode(sensorNoiseMode.Noisy);
 		displacementPID.setBacklash(0.0);
-		displacementPID.setPositionTolerance(0.02);
-		displacementPID.setVelocityTolerance(0.02);
+		displacementPID.setPositionTolerance(0.01);
+		displacementPID.setVelocityTolerance(0.01);
 		displacementPID.setMinimumOutput(minLineOutput);
 		displacementPID.setkP(kP);
 		displacementPID.setkI(kI);
@@ -108,6 +108,7 @@ public enum TorMotionProfile
 	}
 	
 	public double lookUpHeading(long t){
+		
 		return activeTrajectory.lookUpHeading(lookupTime);
 	}
 	public double lookUpOmega(long t){
